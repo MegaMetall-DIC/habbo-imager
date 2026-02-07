@@ -44,20 +44,27 @@ h1 {
 }
 
 .avatar-box {
-  margin-top: 20px;
+  margin: 20px auto;
   background: #111;
-  border: 1px solid #b30000;
-  border-radius: 12px;
-  padding: 20px;
+  border: 2px solid #b30000;
+  border-radius: 16px;
+  width: 360px;
+  height: 580px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
 }
 
 .avatar-box img {
+  width: 340px;
+  height: 538px;
   image-rendering: pixelated;
   transform-origin: center;
 }
 
 .upscale-box {
-  margin-top: 15px;
+  margin-top: 10px;
 }
 
 .upscale-box input {
