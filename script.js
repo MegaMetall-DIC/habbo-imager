@@ -1,59 +1,84 @@
-let baseImage = null;
+const input = document.getElementById("nickInput");
+const btn = document.getElementById("generateBtn");
+const avatarImg = document.getElementById("avatarImg");
+const zoomRange = document.getElementById("zoomRange");
+const copyBtn = document.getElementById("copyBtn");
+const downloadBtn = document.getElementById("downloadBtn");
+const groupsContainer = document.getElementById("groupsContainer");
 
-const slider = document.getElementById("scaleSlider");
-const scaleValue = document.getElementById("scaleValue");
+function gerarAvatar(nick) {
+  const zoom = zoomRange.value;
 
-slider.addEventListener("input", () => {
-  scaleValue.textContent = slider.value + "x";
-  if (baseImage) renderizar();
+  const url =
+    "https://www.habbo.com/habbo-imaging/avatarimage" +
+    "?user=" + encodeURIComponent(nick) +
+    "&direction=2&head_direction=3&action=std" +
+    "&gesture=std&size=l";
+
+  avatarImg.src = url;
+  avatarImg.style.transform = `scale(${zoom})`;
+}
+
+zoomRange.addEventListener("input", () => {
+  avatarImg.style.transform = `scale(${zoomRange.value})`;
 });
 
-async function gerar() {
-  const nick = document.getElementById("nick").value;
-  const img = new Image();
-  img.crossOrigin = "anonymous";
+async function carregarGrupos(nick) {
+  groupsContainer.innerHTML = "<p>Carregando grupos...</p>";
 
-  img.src = `https://www.habbo.com.br/habbo-imaging/avatarimage?user=${nick}&size=l&direction=2&head_direction=3&gesture=std&action=std`;
-
-  img.onload = () => {
-    baseImage = img;
-    renderizar();
-  };
-
-  carregarBadges(nick);
-}
-
-function renderizar() {
-  const scale = parseInt(slider.value);
-  const canvas = document.getElementById("canvas");
-  const ctx = canvas.getContext("2d");
-
-  canvas.width = baseImage.width * scale;
-  canvas.height = baseImage.height * scale;
-
-  ctx.imageSmoothingEnabled = false;
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-  ctx.drawImage(baseImage, 0, 0, canvas.width, canvas.height);
-}
-
-async function carregarBadges(nick) {
-  const badgesDiv = document.getElementById("badges");
-  badgesDiv.innerHTML = "";
-
-  const userRes = await fetch(
-    `https://www.habbo.com.br/api/public/users?name=${nick}`
+  const res = await fetch(
+    "https://raspy-darkness-de40dic-habbo-groups.alvesedu-br.workers.dev/?nick=" +
+      encodeURIComponent(nick)
   );
-  const user = await userRes.json();
 
-  const badgesRes = await fetch(
-    `https://www.habbo.com.br/api/public/users/${user.uniqueId}/badges`
-  );
-  const badges = await badgesRes.json();
+  const grupos = await res.json();
 
-  badges.forEach(b => {
-    const img = document.createElement("img");
-    img.src = `https://images.habbo.com/c_images/album1584/${b.code}.gif`;
-    img.title = b.code;
-    badgesDiv.appendChild(img);
+  if (!Array.isArray(grupos) || grupos.length === 0) {
+    groupsContainer.innerHTML = "<p>Nenhum grupo encontrado.</p>";
+    return;
+  }
+
+  // Priorizar DIC / TJP
+  grupos.sort((a, b) => {
+    const aDIC = /\[DIC|\[TJP|ÐIC|Polícia/i.test(a.name);
+    const bDIC = /\[DIC|\[TJP|ÐIC|Polícia/i.test(b.name);
+    return bDIC - aDIC;
+  });
+
+  groupsContainer.innerHTML = "";
+
+  grupos.forEach(g => {
+    const div = document.createElement("div");
+    div.className = "group-card";
+
+    div.innerHTML = `
+      <img src="${g.badge}">
+      <span>${g.name}</span>
+    `;
+
+    groupsContainer.appendChild(div);
   });
 }
+
+btn.onclick = () => {
+  const nick = input.value.trim();
+  if (!nick) return;
+
+  gerarAvatar(nick);
+  carregarGrupos(nick);
+};
+
+copyBtn.onclick = async () => {
+  const blob = await fetch(avatarImg.src).then(r => r.blob());
+  await navigator.clipboard.write([
+    new ClipboardItem({ "image/png": blob })
+  ]);
+  alert("Imagem copiada!");
+};
+
+downloadBtn.onclick = () => {
+  const a = document.createElement("a");
+  a.href = avatarImg.src;
+  a.download = "habbo-avatar.png";
+  a.click();
+};
