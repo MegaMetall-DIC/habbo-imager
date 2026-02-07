@@ -4,8 +4,12 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Polícia DIC - Marketing Imager</title>
+  
   <link rel="stylesheet" href="style.css">
+  
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&display=swap" rel="stylesheet">
+  
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
 
@@ -126,17 +130,20 @@
       </aside>
 
       <main class="preview-panel">
-        <div class="tip-box">Dica: Use as setas para girar. Enter para buscar.</div>
+        <div class="tip-box">
+            <i class="fa-solid fa-circle-info" style="margin-right: 8px;"></i> 
+            Dica: Use as setas para girar. Enter para buscar.
+        </div>
 
         <div class="preview-area">
           <div class="avatar-display">
             <img id="avatarImg" src="" alt="Avatar Preview">
           </div>
           <div class="rotation-controls">
-            <button class="rot-btn" data-dir="1">&lt;</button>
-            <button class="rot-btn" data-dir="3">&gt;</button>
+            <button class="rot-btn" data-dir="1"><i class="fa-solid fa-chevron-left"></i></button>
+            <button class="rot-btn" data-dir="3"><i class="fa-solid fa-chevron-right"></i></button>
           </div>
-          <button id="headOnlyBtn" class="head-toggle">👤 APENAS CABEÇA</button>
+          <button id="headOnlyBtn" class="head-toggle"><i class="fa-solid fa-user"></i> CABEÇA</button>
         </div>
 
         <div class="size-controls">
@@ -152,10 +159,19 @@
                <input type="range" id="zoomRange" min="1" max="5" step="0.5" value="1">
                <span id="zoomValue">1x</span>
              </div>
-             <button id="btnRenderAvatar" class="mini-btn render-btn" title="Aplicar/Renderizar Zoom">⚙️ Aplicar</button>
+             
+             <button id="btnRenderAvatar" class="mini-btn render-btn" title="Aplicar/Renderizar Zoom">
+                <i class="fa-solid fa-gears"></i> Aplicar
+             </button>
+             
              <div class="btn-divider"></div>
-             <button id="btnDownloadAvatar" class="mini-btn" title="Baixar Imagem"><span class="icon">💾</span></button>
-             <button id="btnCopyAvatar" class="mini-btn" title="Copiar Imagem"><span class="icon">📋</span></button>
+
+             <button id="btnDownloadAvatar" class="mini-btn" title="Baixar Imagem">
+                <i class="fa-solid fa-download"></i>
+             </button>
+             <button id="btnCopyAvatar" class="mini-btn" title="Copiar Imagem">
+                <i class="fa-solid fa-copy"></i>
+             </button>
            </div>
            <p class="status-text" id="avatarStatus">Arraste e clique em "Aplicar".</p>
         </div>
@@ -182,10 +198,19 @@
                  <input type="range" id="badgeZoomRange" min="1" max="10" step="1" value="1">
                  <span id="badgeZoomValue">1x</span>
                </div>
-               <button id="btnRenderBadge" class="mini-btn render-btn" title="Aplicar Zoom">⚙️</button>
+               
+               <button id="btnRenderBadge" class="mini-btn render-btn" title="Aplicar Zoom">
+                 <i class="fa-solid fa-gears"></i>
+               </button>
+               
                <div class="btn-divider"></div>
-               <button id="btnDownloadBadge" class="mini-btn" title="Baixar Imagem"><span class="icon">💾</span></button>
-               <button id="btnCopyBadge" class="mini-btn" title="Copiar Imagem"><span class="icon">📋</span></button>
+
+               <button id="btnDownloadBadge" class="mini-btn" title="Baixar Imagem">
+                 <i class="fa-solid fa-download"></i>
+               </button>
+               <button id="btnCopyBadge" class="mini-btn" title="Copiar Imagem">
+                 <i class="fa-solid fa-copy"></i>
+               </button>
              </div>
              <p class="status-text" id="badgeStatus">Clique na engrenagem para aplicar.</p>
            </div>
@@ -205,8 +230,8 @@
     </section>
 
     <footer>
-      <p>Desenvolvido com <span style="color:var(--accent-color)">❤</span> por <strong>MegaMetall</strong></p>
-      <p>© 2026 Departamento de Investigação Criminal - Todos os direitos reservados.</p>
+      <p>Desenvolvido com <i class="fa-solid fa-heart" style="color:var(--accent-color)"></i> por <strong>MegaMetall</strong></p>
+      <p>© 2024 Departamento de Investigação Criminal - Todos os direitos reservados.</p>
     </footer>
 
   </div>
