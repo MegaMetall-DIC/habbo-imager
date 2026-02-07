@@ -29,7 +29,7 @@ document.addEventListener('DOMContentLoaded', () => {
     badgeZoomValue: document.getElementById('badgeZoomValue'),
     btnRenderBadge: document.getElementById('btnRenderBadge'), // Botão Aplicar
     btnDownloadBadge: document.getElementById('btnDownloadBadge'),
-    btnCopyBadgeLink: document.getElementById('btnCopyBadgeLink'),
+    btnCopyBadge: document.getElementById('btnCopyBadge'), // ID renomeado para consistência
     badgePlaceholder: document.getElementById('badgePlaceholderText'),
     badgeStatus: document.getElementById('badgeStatus'),
     
@@ -45,7 +45,6 @@ document.addEventListener('DOMContentLoaded', () => {
   // --- LÓGICA DE GERAR IMAGEM (CANVAS) ---
   async function createUpscaledBlob(imgUrl, scale) {
     try {
-      // Fetch com mode 'cors' para tentar pegar a imagem
       const response = await fetch(imgUrl, { mode: 'cors' });
       if (!response.ok) throw new Error("CORS Block");
       
@@ -62,7 +61,7 @@ document.addEventListener('DOMContentLoaded', () => {
       
       return new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
     } catch (err) {
-      console.warn("Erro ao renderizar (CORS?):", err);
+      console.warn("Erro ao renderizar:", err);
       return null;
     }
   }
@@ -73,10 +72,11 @@ document.addEventListener('DOMContentLoaded', () => {
   };
 
   function updateAvatar() {
-    // Ao mudar qualquer coisa no avatar, invalidamos o cache do zoom
-    cachedAvatarBlob = null;
-    if(elements.avatarStatus) elements.avatarStatus.textContent = "Alterações feitas. Clique em 'Aplicar' para salvar o zoom.";
-    if(elements.avatarStatus) elements.avatarStatus.style.color = "#d9b3b3";
+    cachedAvatarBlob = null; // Invalida cache anterior
+    if(elements.avatarStatus) {
+        elements.avatarStatus.textContent = "Alterado. Clique na engrenagem para processar o zoom.";
+        elements.avatarStatus.style.color = "#d9b3b3";
+    }
 
     const nick = elements.nick.value.trim();
     if(!nick) return;
@@ -206,8 +206,10 @@ document.addEventListener('DOMContentLoaded', () => {
   function selectGroup(g) {
     if(elements.badgeImg) {
         cachedBadgeBlob = null; // Reseta cache
-        if(elements.badgeStatus) elements.badgeStatus.textContent = "Clique na engrenagem para aplicar zoom.";
-        if(elements.badgeStatus) elements.badgeStatus.style.color = "#d9b3b3";
+        if(elements.badgeStatus) {
+            elements.badgeStatus.textContent = "Novo emblema. Clique na engrenagem para aplicar zoom.";
+            elements.badgeStatus.style.color = "#d9b3b3";
+        }
         
         elements.badgeImg.src = g.badge;
         elements.badgeUrlInput.value = g.badge;
@@ -218,9 +220,9 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  // --- CLICK LISTENERS DO AVATAR ---
+  // --- BOTÃO APLICAR (RENDERIZAR) ---
 
-  // 1. Botão APLICAR (RENDERIZAR) Avatar
+  // AVATAR
   elements.btnRenderAvatar.addEventListener('click', async () => {
     const scale = parseFloat(elements.zoomRange.value);
     elements.avatarStatus.textContent = "Processando...";
@@ -228,53 +230,16 @@ document.addEventListener('DOMContentLoaded', () => {
     const blob = await createUpscaledBlob(elements.avatarImg.src, scale);
     if(blob) {
       cachedAvatarBlob = blob;
-      elements.avatarStatus.textContent = `Zoom de ${scale}x aplicado com sucesso! Pode baixar.`;
+      elements.avatarStatus.textContent = `Zoom de ${scale}x aplicado! Pronto para copiar/baixar.`;
       elements.avatarStatus.style.color = "#00cc00"; // Verde
     } else {
-      elements.avatarStatus.textContent = "Erro ao processar imagem (Bloqueio do Navegador). Baixará a original.";
+      elements.avatarStatus.textContent = "Erro ao processar imagem (Bloqueio do Navegador).";
       elements.avatarStatus.style.color = "#ff4444";
       cachedAvatarBlob = null;
     }
   });
 
-  // 2. Download Avatar (Usa Cache)
-  elements.btnDownloadAvatar.addEventListener('click', () => {
-    if (cachedAvatarBlob) {
-        // Baixa a versão renderizada
-        const url = URL.createObjectURL(cachedAvatarBlob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `${elements.nick.value}_zoom.png`;
-        a.click();
-        URL.revokeObjectURL(url);
-    } else {
-        // Fallback: Baixa original
-        const a = document.createElement('a');
-        a.href = elements.avatarImg.src;
-        a.download = `${elements.nick.value}.png`;
-        a.click();
-        alert("Baixando versão original. (Clique em 'Aplicar' primeiro para zoom HD)");
-    }
-  });
-
-  // 3. Copiar Avatar (Usa Cache)
-  elements.btnCopyAvatar.addEventListener('click', async () => {
-      if (cachedAvatarBlob) {
-        try {
-            await navigator.clipboard.write([new ClipboardItem({ "image/png": cachedAvatarBlob })]);
-            alert("Imagem com zoom copiada!");
-        } catch(e) { alert("Erro ao copiar."); }
-      } else {
-          // Copia apenas link
-          elements.urlOutput.select();
-          document.execCommand('copy');
-          alert("Link copiado! (Para copiar imagem com zoom, clique em 'Aplicar' primeiro)");
-      }
-  });
-
-  // --- CLICK LISTENERS DO EMBLEMA ---
-
-  // 1. Botão APLICAR (RENDERIZAR) Emblema
+  // EMBLEMA
   elements.btnRenderBadge.addEventListener('click', async () => {
     const scale = parseFloat(elements.badgeZoomRange.value);
     elements.badgeStatus.textContent = "Processando...";
@@ -282,16 +247,47 @@ document.addEventListener('DOMContentLoaded', () => {
     const blob = await createUpscaledBlob(elements.badgeImg.src, scale);
     if(blob) {
       cachedBadgeBlob = blob;
-      elements.badgeStatus.textContent = `Zoom de ${scale}x aplicado!`;
+      elements.badgeStatus.textContent = `Zoom de ${scale}x aplicado! Pronto para copiar/baixar.`;
       elements.badgeStatus.style.color = "#00cc00";
     } else {
-      elements.badgeStatus.textContent = "Erro ao processar.";
+      elements.badgeStatus.textContent = "Erro ao processar imagem.";
       elements.badgeStatus.style.color = "#ff4444";
       cachedBadgeBlob = null;
     }
   });
 
-  // 2. Download Emblema
+  // --- BOTÕES DE AÇÃO (COPIAR/BAIXAR IMAGEM) ---
+
+  // 1. Download Avatar
+  elements.btnDownloadAvatar.addEventListener('click', () => {
+    if (cachedAvatarBlob) {
+        const url = URL.createObjectURL(cachedAvatarBlob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `${elements.nick.value}_zoom.png`;
+        a.click();
+        URL.revokeObjectURL(url);
+    } else {
+        alert("⚠️ Clique no ícone de engrenagem (Aplicar) primeiro para processar o zoom!");
+    }
+  });
+
+  // 2. Copiar Avatar (IMAGEM)
+  elements.btnCopyAvatar.addEventListener('click', async () => {
+      if (cachedAvatarBlob) {
+        try {
+            await navigator.clipboard.write([new ClipboardItem({ "image/png": cachedAvatarBlob })]);
+            alert("✅ Imagem copiada com sucesso!");
+        } catch(e) { 
+            console.error(e);
+            alert("Erro ao copiar imagem. Seu navegador pode não suportar essa função."); 
+        }
+      } else {
+          alert("⚠️ Clique no ícone de engrenagem (Aplicar) primeiro para gerar a imagem!");
+      }
+  });
+
+  // 3. Download Emblema
   elements.btnDownloadBadge.addEventListener('click', () => {
       if (cachedBadgeBlob) {
           const url = URL.createObjectURL(cachedBadgeBlob);
@@ -301,24 +297,26 @@ document.addEventListener('DOMContentLoaded', () => {
           a.click();
           URL.revokeObjectURL(url);
       } else {
-          if(!elements.badgeUrlInput.value) return;
-          const a = document.createElement('a');
-          a.href = elements.badgeImg.src;
-          a.download = `emblema.gif`;
-          a.click();
-          alert("Baixando original. (Clique na engrenagem para zoom HD)");
+          alert("⚠️ Clique no ícone de engrenagem (Aplicar) primeiro!");
       }
   });
 
-  // 3. Copiar Emblema Link (Fallback)
-  elements.btnCopyBadgeLink.addEventListener('click', () => {
-      elements.badgeUrlInput.select();
-      document.execCommand('copy');
-      alert("Link copiado!");
+  // 4. Copiar Emblema (IMAGEM)
+  elements.btnCopyBadge.addEventListener('click', async () => {
+      if (cachedBadgeBlob) {
+          try {
+            await navigator.clipboard.write([new ClipboardItem({ "image/png": cachedBadgeBlob })]);
+            alert("✅ Emblema copiado com sucesso!");
+          } catch(e) {
+            console.error(e);
+            alert("Erro ao copiar imagem.");
+          }
+      } else {
+          alert("⚠️ Clique no ícone de engrenagem (Aplicar) primeiro!");
+      }
   });
 
-
-  // --- RESTO DOS EVENTOS (Mudança de input reseta cache) ---
+  // --- EVENTOS GERAIS ---
   
   elements.loadBtn.addEventListener('click', () => {
     updateAvatar();
@@ -328,7 +326,6 @@ document.addEventListener('DOMContentLoaded', () => {
     if (e.key === 'Enter') elements.loadBtn.click();
   });
   
-  // Ao mudar inputs do avatar, reseta cache
   ['hotel', 'gesture', 'action', 'leftHand', 'rightHand', 'format'].forEach(id => {
     const el = document.getElementById(id + 'Select');
     if(el) el.addEventListener('change', updateAvatar);
@@ -358,14 +355,15 @@ document.addEventListener('DOMContentLoaded', () => {
     updateAvatar();
   });
 
-  // Ao mudar zoom range, invalidamos cache
   elements.zoomRange.addEventListener('input', (e) => {
     const val = e.target.value;
     elements.avatarImg.style.transform = `scale(${val})`;
     elements.zoomValue.textContent = val + "x";
-    cachedAvatarBlob = null; 
-    elements.avatarStatus.textContent = "Zoom alterado. Clique em 'Aplicar'.";
-    elements.avatarStatus.style.color = "#d9b3b3";
+    cachedAvatarBlob = null; // Zoom mudou, invalida cache
+    if(elements.avatarStatus) {
+        elements.avatarStatus.textContent = "Zoom alterado. Clique na engrenagem para aplicar.";
+        elements.avatarStatus.style.color = "#d9b3b3";
+    }
   });
 
   elements.badgeZoomRange.addEventListener('input', (e) => {
@@ -373,8 +371,10 @@ document.addEventListener('DOMContentLoaded', () => {
     elements.badgeImg.style.transform = `scale(${val})`;
     elements.badgeZoomValue.textContent = val + "x";
     cachedBadgeBlob = null;
-    elements.badgeStatus.textContent = "Zoom alterado. Clique na engrenagem.";
-    elements.badgeStatus.style.color = "#d9b3b3";
+    if(elements.badgeStatus) {
+        elements.badgeStatus.textContent = "Zoom alterado. Clique na engrenagem para aplicar.";
+        elements.badgeStatus.style.color = "#d9b3b3";
+    }
   });
 
   // START
