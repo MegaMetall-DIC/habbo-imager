@@ -55,8 +55,7 @@ async function carregarGrupos(nick) {
     div.className = "group-card";
 
     const img = document.createElement("img");
-    img.src = g.badge;
-    img.referrerPolicy = "no-referrer";
+    img.src = g.badge; // rota oficial do Habbo (igual Mythabbo)
     img.loading = "lazy";
     img.alt = g.name;
 
