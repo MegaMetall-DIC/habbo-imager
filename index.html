@@ -3,9 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Habbo Imager - Studio</title>
+  <title>Polícia DIC - Marketing Imager</title>
   <link rel="stylesheet" href="style.css">
-  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&display=swap" rel="stylesheet">
 </head>
 <body>
 
@@ -13,21 +13,28 @@
     
     <header>
       <div class="header-content">
-        <h1>Habbo Imager</h1>
-        <p>Estúdio de Imagens. Gere avatares e veja grupos com qualidade.</p>
+        <img src="https://i.imgur.com/Rh7uF6e.png" alt="Logo DIC" class="logo-dic">
+        
+        <div class="header-text">
+          <h1>HABBO IMAGER <span class="badge-mkt">MKT</span></h1>
+          <p>Ferramenta exclusiva da <strong>Equipe de Marketing</strong>.</p>
+        </div>
+
+        <img src="https://i.imgur.com/vJUpaZx.gif" alt="Logo MKT" class="logo-mkt">
       </div>
-      <div class="lang-badge">PT</div>
     </header>
 
     <div class="content-grid">
       
       <aside class="config-panel">
-        <h3>CONFIGURAÇÕES</h3>
+        <div class="panel-header">
+          <h3>CONFIGURAÇÕES</h3>
+        </div>
         
         <div class="input-group">
           <label>Nick do Habbo</label>
           <div class="input-row">
-            <input type="text" id="nickInput" placeholder="Ex: MilitaryTimes" value="MilitaryTimes">
+            <input type="text" id="nickInput" value="MegaMetall" placeholder="Digite e aperte Enter...">
             <button id="loadBtn" class="btn-primary">APLICAR</button>
           </div>
         </div>
@@ -50,10 +57,12 @@
               <option value="sad">Triste</option>
               <option value="spk">Falar</option>
               <option value="eyb">Olhos Fechados</option>
+              <option value="agr">Raiva</option>
+              <option value="srp">Surpreso</option>
             </select>
           </div>
           <div class="input-group half">
-            <label>Ação</label>
+            <label>Ação (Corpo)</label>
             <select id="actionSelect">
               <option value="std">Normal</option>
               <option value="wlk">Andar</option>
@@ -65,20 +74,58 @@
 
         <div class="row-group">
           <div class="input-group half">
-            <label>Tamanho</label>
-            <select id="sizeSelect">
-              <option value="l">Grande (L)</option>
-              <option value="m">Médio (M)</option>
-              <option value="s">Pequeno (S)</option>
+            <label>Mão Esquerda (Itens)</label>
+            <select id="leftHandSelect">
+              <option value="0">Nenhuma</option>
+              <option value="1">Bebida: Chá/Suco</option>
+              <option value="2">Bebida: Refri</option>
+              <option value="3">Bebida: Cenoura</option>
+              <option value="5">Bebida: Leite</option>
+              <option value="6">Bebida: Groselha</option>
+              <option value="9">Bebida: Love Potion</option>
+              <option value="33">Bebida: Calice</option>
+              <option value="42">Bebida: Água Sacra</option>
+              <option value="43">Item: Pipoca</option>
+              <option value="44">Item: Pirulito</option>
+              <option value="57">Item: Sorvete</option>
+              <option value="66">Item: Monster Plant</option>
             </select>
           </div>
           <div class="input-group half">
-            <label>Formato</label>
-            <select id="formatSelect">
-              <option value="png">PNG</option>
-              <option value="gif">GIF</option>
+            <label>Mão Direita</label>
+            <select id="rightHandSelect">
+              <option value="0">Nenhuma</option>
+              <option value="wav">Acenar</option>
+              <option value="blow">Mandar Beijo</option>
+              <option value="respect">Respeito (Placa)</option>
+              <option value="11">Placa 0</option>
+              <option value="12">Placa 1</option>
+              <option value="13">Placa 2</option>
+              <option value="14">Placa 3</option>
+              <option value="15">Placa 4</option>
+              <option value="16">Placa 5</option>
+              <option value="17">Placa 6</option>
+              <option value="18">Placa 7</option>
+              <option value="19">Placa 8</option>
+              <option value="20">Placa 9</option>
+              <option value="21">Placa 10</option>
+              <option value="22">Placa Coração</option>
+              <option value="23">Placa Caveira</option>
+              <option value="24">Placa Exclamação</option>
+              <option value="25">Placa Bola</option>
+              <option value="26">Placa Sorriso</option>
+              <option value="27">Cartão Vermelho</option>
+              <option value="28">Cartão Amarelo</option>
             </select>
           </div>
+        </div>
+
+        <div class="input-group">
+          <label>Formato de Saída</label>
+          <select id="formatSelect">
+            <option value="png">PNG (Transparente)</option>
+            <option value="gif">GIF</option>
+          </select>
         </div>
 
       </aside>
@@ -86,12 +133,12 @@
       <main class="preview-panel">
         
         <div class="tip-box">
-          Use os botões abaixo para girar o avatar.
+          Dica: Use as setas para girar. Enter para buscar.
         </div>
 
         <div class="preview-area">
           <div class="avatar-display">
-            <img id="avatarImg" src="" alt="Avatar Preview">
+            <img id="avatarImg" src="" alt="Avatar Preview" crossorigin="anonymous">
           </div>
           
           <div class="rotation-controls">
@@ -102,59 +149,74 @@
           <button id="headOnlyBtn" class="head-toggle">👤 APENAS CABEÇA</button>
         </div>
 
-        <div class="url-copy-area">
-          <input type="text" id="urlOutput" readonly>
-          <button id="copyUrlBtn" title="Copiar Link">📋</button>
+        <div class="size-controls">
+           <button class="size-btn" data-size="s">Pequeno</button>
+           <button class="size-btn active" data-size="m">Médio</button>
+           <button class="size-btn" data-size="l">Grande</button>
         </div>
 
-        <div class="actions-row">
-           <button id="downloadBtn" class="btn-outline">BAIXAR AVATAR</button>
+        <div class="zoom-tools-wrapper">
+           <label>Upscaler de Avatar (Zoom Real)</label>
+           <div class="zoom-row">
+             <div class="range-container">
+               <input type="range" id="zoomRange" min="1" max="5" step="0.5" value="1">
+               <span id="zoomValue">1x</span>
+             </div>
+             <button id="btnApplyZoomAvatar" class="mini-btn" title="Aplicar/Baixar"><span class="icon">💾</span></button>
+             <button id="btnCopyZoomAvatar" class="mini-btn" title="Copiar Imagem"><span class="icon">📋</span></button>
+           </div>
+        </div>
+
+        <div class="url-copy-area">
+          <input type="text" id="urlOutput" readonly>
         </div>
 
       </main>
     </div>
 
-    <section class="resize-section">
-      <h3>ZOOM DO AVATAR</h3>
-      <div class="resize-controls">
-        <input type="range" id="zoomRange" min="1" max="4" step="0.1" value="1">
-        <span id="zoomValue">100%</span>
-      </div>
-    </section>
-
     <section class="upscale-section" id="badgeSection">
-      <h3>REDIMENSIONAR EMBLEMA</h3>
+      <div class="upscale-header">
+        <h3>REDIMENSIONAR EMBLEMA</h3>
+      </div>
       
       <div class="upscale-wrapper">
         <div class="badge-display-box">
-           <img id="badgePreviewImg" src="https://images.habbo.com/c_images/Album1584/BADGE_CODE.gif" alt="Emblema">
-           <p id="badgePlaceholderText">Selecione um grupo abaixo</p>
+           <img id="badgePreviewImg" src="https://images.habbo.com/c_images/Album1584/BADGE_CODE.gif" alt="Emblema" crossorigin="anonymous">
+           <p id="badgePlaceholderText">Carregando...</p>
         </div>
-
+        
         <div class="badge-controls-sidebar">
            <div class="control-box">
              <label>Zoom / Escala</label>
-             <div class="range-with-value">
-               <input type="range" id="badgeZoomRange" min="1" max="10" step="0.5" value="1">
-               <span id="badgeZoomValue">1x</span>
+             <div class="zoom-row">
+               <div class="range-container">
+                 <input type="range" id="badgeZoomRange" min="1" max="10" step="1" value="1">
+                 <span id="badgeZoomValue">1x</span>
+               </div>
+               <button id="btnApplyZoomBadge" class="mini-btn" title="Baixar Emblema"><span class="icon">💾</span></button>
+               <button id="btnCopyZoomBadge" class="mini-btn" title="Copiar Emblema"><span class="icon">📋</span></button>
              </div>
            </div>
-
+           
            <div class="control-box">
              <label>Link do Emblema</label>
              <input type="text" id="badgeUrlInput" readonly placeholder="URL...">
            </div>
-
-           <button id="downloadBadgeBtn" class="btn-primary full-width">BAIXAR EMBLEMA</button>
         </div>
       </div>
     </section>
+
     <section class="groups-section">
       <h3>GRUPOS DO USUÁRIO</h3>
       <div id="groupsContainer" class="groups-grid">
         <p style="color: #666;">Clique em "APLICAR" para carregar.</p>
       </div>
     </section>
+
+    <footer>
+      <p>Desenvolvido com <span style="color:var(--accent-color)">❤</span> por <strong>MegaMetall</strong></p>
+      <p>© 2026 Departamento de Investigação Criminal - Todos os direitos reservados.</p>
+    </footer>
 
   </div>
 
