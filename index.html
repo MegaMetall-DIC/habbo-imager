@@ -2,38 +2,131 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
-  <title>DIC • Habbo Imager</title>
-
-  <link rel="icon" href="https://i.ibb.co/RQ2yQ57/b19134s02114s01094t15094t27114649ec2bd2188f03d2e7406f856c734c3.png">
-
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Habbo Imager - Estilo MYT</title>
   <link rel="stylesheet" href="style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
 
-  <div class="container">
-    <h1>DIC • Habbo Imager</h1>
+  <div class="main-wrapper">
+    
+    <header>
+      <div class="header-content">
+        <h1>Habbo Imager</h1>
+        <p>Estúdio de Imagens. Gere avatares e veja grupos com qualidade.</p>
+      </div>
+      <div class="lang-badge">PT</div>
+    </header>
 
-    <div class="controls">
-      <input type="text" id="nickInput" placeholder="Nick do Habbo">
-      <button id="generateBtn">Gerar Avatar</button>
+    <div class="content-grid">
+      
+      <aside class="config-panel">
+        <h3>CONFIGURAÇÕES</h3>
+        
+        <div class="input-group">
+          <label>Habbo</label>
+          <div class="input-row">
+            <input type="text" id="nickInput" placeholder="Nome do usuário" value="MilitaryTimes">
+            <button id="loadBtn" class="btn-primary">Aplicar</button>
+          </div>
+        </div>
+
+        <div class="input-group">
+          <label>Hotel</label>
+          <select id="hotelSelect">
+            <option value="com.br">Brasil (.com.br)</option>
+            <option value="com">Estados Unidos (.com)</option>
+            <option value="es">Espanha (.es)</option>
+          </select>
+        </div>
+
+        <div class="row-group">
+          <div class="input-group half">
+            <label>Rosto</label>
+            <select id="gestureSelect">
+              <option value="std">Normal</option>
+              <option value="sml">Sorrir</option>
+              <option value="sad">Triste</option>
+              <option value="spk">Falar</option>
+              <option value="eyb">Olhos Fechados</option>
+            </select>
+          </div>
+          <div class="input-group half">
+            <label>Ação</label>
+            <select id="actionSelect">
+              <option value="std">Normal</option>
+              <option value="wlk">Andar</option>
+              <option value="sit">Sentar</option>
+              <option value="lay">Deitar</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="row-group">
+          <div class="input-group half">
+            <label>Tamanho</label>
+            <select id="sizeSelect">
+              <option value="l">Grande (L)</option>
+              <option value="m">Médio (M)</option>
+              <option value="s">Pequeno (S)</option>
+            </select>
+          </div>
+          <div class="input-group half">
+            <label>Formato</label>
+            <select id="formatSelect">
+              <option value="png">PNG</option>
+              <option value="gif">GIF</option>
+            </select>
+          </div>
+        </div>
+
+      </aside>
+
+      <main class="preview-panel">
+        
+        <div class="tip-box">
+          💡 Dica: Use os botões abaixo para rotacionar o avatar.
+        </div>
+
+        <div class="preview-area">
+          <div class="avatar-display">
+            <img id="avatarImg" src="" alt="Avatar Preview">
+          </div>
+          
+          <div class="rotation-controls">
+            <button class="rot-btn" data-dir="1">&lt;</button> <button class="rot-btn" data-dir="3">&gt;</button> </div>
+
+          <button id="headOnlyBtn" class="head-toggle">👤 APENAS CABEÇA</button>
+        </div>
+
+        <div class="url-copy-area">
+          <input type="text" id="urlOutput" readonly>
+          <button id="copyUrlBtn">📋</button>
+        </div>
+
+        <div class="actions-row">
+           <button id="downloadBtn" class="btn-outline">Download Imagem</button>
+        </div>
+
+      </main>
     </div>
 
-    <div class="avatar-box">
-      <img id="avatarImg" alt="Avatar Habbo">
-    </div>
+    <section class="resize-section">
+      <h3>REDIMENSIONAR (ZOOM VISUAL)</h3>
+      <div class="resize-controls">
+        <input type="range" id="zoomRange" min="1" max="4" step="0.1" value="1">
+        <span id="zoomValue">100%</span>
+      </div>
+    </section>
 
-    <div class="upscale-box">
-      <label>Zoom / Upscaler</label><br>
-      <input type="range" id="zoomRange" min="1" max="6" step="0.1" value="3">
-    </div>
+    <section class="groups-section">
+      <h3>GRUPOS DO USUÁRIO</h3>
+      <div id="groupsContainer" class="groups-grid">
+        <p style="color: #666;">Clique em "Aplicar" para carregar os grupos.</p>
+      </div>
+    </section>
 
-    <div class="actions">
-      <button id="copyBtn">Copiar imagem</button>
-      <button id="downloadBtn">Download PNG</button>
-    </div>
-
-    <h2 class="groups-title">Grupos do Usuário</h2>
-    <div id="groupsContainer" class="groups-grid"></div>
   </div>
 
   <script src="script.js"></script>
