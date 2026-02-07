@@ -42,20 +42,28 @@ document.addEventListener('DOMContentLoaded', () => {
   let cachedAvatarBlob = null;
   let cachedBadgeBlob = null;
 
-  // --- FUNÇÃO DE GERAÇÃO COM MÚLTIPLOS PROXIES ---
-  async function createUpscaledBlob(imgUrl, scale) {
-    // Lista de proxies para tentar contornar o bloqueio do Habbo
+  // --- FUNÇÃO DE GERAÇÃO COM MÚLTIPLOS PROXIES (ROBUSTA) ---
+  async function createUpscaledBlob(imgUrl, scale, statusElement) {
+    // Lista de proxies em ordem de prioridade (Mais rápido -> Backups)
     const proxies = [
+      (url) => `https://corsproxy.io/?${encodeURIComponent(url)}`,
       (url) => `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
-      (url) => `https://corsproxy.io/?${encodeURIComponent(url)}`
+      (url) => `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(url)}`
     ];
+
+    let attempt = 1;
 
     for (const getProxyUrl of proxies) {
       try {
+        if(statusElement) statusElement.textContent = `Processando (Tentativa ${attempt}/${proxies.length})...`;
+        
         const proxyUrl = getProxyUrl(imgUrl);
         const response = await fetch(proxyUrl);
         
-        if (!response.ok) continue; // Se falhar, tenta o próximo
+        if (!response.ok) {
+            attempt++;
+            continue; // Se falhar, tenta o próximo
+        }
 
         const blob = await response.blob();
         const bitmap = await createImageBitmap(blob);
@@ -70,7 +78,8 @@ document.addEventListener('DOMContentLoaded', () => {
         
         return new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
       } catch (err) {
-        console.warn("Proxy falhou, tentando próximo...", err);
+        console.warn(`Proxy ${attempt} falhou:`, err);
+        attempt++;
       }
     }
     return null; // Todos falharam
@@ -102,7 +111,6 @@ document.addEventListener('DOMContentLoaded', () => {
       img_format: elements.format.value
     };
 
-    // Montagem das Ações (Mãos, Itens, Gestos)
     let actionsArray = [];
     if(elements.action.value !== 'std') actionsArray.push(elements.action.value);
     
@@ -113,7 +121,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const lh = elements.leftHand.value;
     if (parseInt(lh) > 0) {
-       // Lista de bebidas conhecidas vs itens normais
        const drinks = ['1','2','3','5','6','9','33','42'];
        actionsArray.push(drinks.includes(lh) ? `drk=${lh}` : `crr=${lh}`);
     }
@@ -200,7 +207,10 @@ document.addEventListener('DOMContentLoaded', () => {
   function selectGroup(g) {
     if(elements.badgeImg) {
         cachedBadgeBlob = null;
-        if(elements.badgeStatus) elements.badgeStatus.textContent = "Novo emblema. Clique na engrenagem.";
+        if(elements.badgeStatus) {
+            elements.badgeStatus.textContent = "Novo emblema. Clique na engrenagem.";
+            elements.badgeStatus.style.color = "#d9b3b3";
+        }
         
         elements.badgeImg.src = g.badge;
         elements.badgeUrlInput.value = g.badge;
@@ -215,15 +225,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
   elements.btnRenderAvatar.addEventListener('click', async () => {
     const scale = parseFloat(elements.zoomRange.value);
-    elements.avatarStatus.textContent = "Processando (Aguarde)...";
     
-    const blob = await createUpscaledBlob(elements.avatarImg.src, scale);
+    // Passamos o elemento de status para a função atualizar o texto
+    const blob = await createUpscaledBlob(elements.avatarImg.src, scale, elements.avatarStatus);
+    
     if(blob) {
       cachedAvatarBlob = blob;
       elements.avatarStatus.textContent = `Zoom de ${scale}x PRONTO!`;
-      elements.avatarStatus.style.color = "#00cc00";
+      elements.avatarStatus.style.color = "#00cc00"; // Verde
     } else {
-      elements.avatarStatus.textContent = "Erro no Upscaler (Tente novamente).";
+      elements.avatarStatus.textContent = "Erro: Servidores ocupados. Tente novamente.";
       elements.avatarStatus.style.color = "#ff4444";
       cachedAvatarBlob = null;
     }
@@ -231,16 +242,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
   elements.btnRenderBadge.addEventListener('click', async () => {
     const scale = parseFloat(elements.badgeZoomRange.value);
-    elements.badgeStatus.textContent = "Processando...";
     
-    const blob = await createUpscaledBlob(elements.badgeImg.src, scale);
+    const blob = await createUpscaledBlob(elements.badgeImg.src, scale, elements.badgeStatus);
+    
     if(blob) {
       cachedBadgeBlob = blob;
       elements.badgeStatus.textContent = `Zoom de ${scale}x PRONTO!`;
       elements.badgeStatus.style.color = "#00cc00";
     } else {
-      elements.badgeStatus.textContent = "Erro no Upscaler.";
+      elements.badgeStatus.textContent = "Erro: Servidores ocupados.";
       elements.badgeStatus.style.color = "#ff4444";
+      cachedBadgeBlob = null;
     }
   });
 
@@ -334,7 +346,6 @@ document.addEventListener('DOMContentLoaded', () => {
     updateAvatar();
   });
   
-  // Resetar status ao mexer no zoom
   elements.zoomRange.addEventListener('input', (e) => {
     elements.avatarImg.style.transform = `scale(${e.target.value})`;
     elements.zoomValue.textContent = e.target.value + "x";
@@ -354,7 +365,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  // START
+  // START AUTOMÁTICO
   updateAvatar();
   carregarGrupos(elements.nick.value);
 });
