@@ -53,10 +53,18 @@ async function carregarGrupos(nick) {
   grupos.forEach(g => {
     const div = document.createElement("div");
     div.className = "group-card";
-    div.innerHTML = `
-      <img src="${g.badge}">
-      <span>${g.name}</span>
-    `;
+
+    const img = document.createElement("img");
+    img.src = g.badge;
+    img.referrerPolicy = "no-referrer";
+    img.loading = "lazy";
+    img.alt = g.name;
+
+    const span = document.createElement("span");
+    span.textContent = g.name;
+
+    div.appendChild(img);
+    div.appendChild(span);
     groupsContainer.appendChild(div);
   });
 }
