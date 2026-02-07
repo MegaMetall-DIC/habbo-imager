@@ -19,7 +19,7 @@ document.addEventListener('DOMContentLoaded', () => {
     zoomRange: document.getElementById('zoomRange'),
     zoomValue: document.getElementById('zoomValue'),
     
-    // Upscaler Emblema
+    // Upscaler Emblema (Verificando se existem para evitar erros)
     badgeImg: document.getElementById('badgePreviewImg'),
     badgeUrlInput: document.getElementById('badgeUrlInput'),
     badgeZoomRange: document.getElementById('badgeZoomRange'),
@@ -31,7 +31,7 @@ document.addEventListener('DOMContentLoaded', () => {
     groupsContainer: document.getElementById('groupsContainer')
   };
 
-  if (!elements.loadBtn) return; // Evita erros se o HTML estiver incompleto
+  if (!elements.loadBtn) return; 
 
   // --- ESTADO AVATAR ---
   let currentState = {
@@ -99,7 +99,7 @@ document.addEventListener('DOMContentLoaded', () => {
       grupos.forEach(g => {
         const div = document.createElement("div");
         div.className = "group-card";
-        div.title = "Clique para ampliar este emblema"; // Tooltip
+        div.title = "Clique para redimensionar este emblema";
 
         const img = document.createElement("img");
         img.src = g.badge; 
@@ -111,20 +111,30 @@ document.addEventListener('DOMContentLoaded', () => {
         div.appendChild(span);
         elements.groupsContainer.appendChild(div);
 
-        // --- EVENTO DE CLIQUE NO GRUPO ---
+        // --- EVENTO DE CLIQUE NO GRUPO (MANDA PRO UPSCALER) ---
         div.addEventListener('click', () => {
-          // 1. Atualiza a imagem do upscaler
-          elements.badgeImg.src = g.badge;
-          elements.badgeUrlInput.value = g.badge;
-          elements.badgePlaceholder.style.display = 'none'; // Esconde texto de ajuda
+          // 1. Pega a caixa do upscaler
+          const upscalerSection = document.getElementById('badgeSection');
           
-          // 2. Reseta o zoom do emblema para 1x
-          elements.badgeZoomRange.value = 1;
-          elements.badgeImg.style.transform = `scale(1)`;
-          elements.badgeZoomValue.textContent = "1x";
+          // 2. Atualiza a imagem e inputs
+          if(elements.badgeImg) {
+            elements.badgeImg.src = g.badge;
+            elements.badgeUrlInput.value = g.badge;
+            elements.badgePlaceholder.style.display = 'none';
+            
+            // Reseta zoom
+            elements.badgeZoomRange.value = 1;
+            elements.badgeImg.style.transform = `scale(1)`;
+            elements.badgeZoomValue.textContent = "1x";
+          }
 
-          // 3. Rola a página até a caixa do upscaler suavemente
-          document.getElementById('badgeSection').scrollIntoView({ behavior: 'smooth' });
+          // 3. Scroll suave até a caixa
+          if(upscalerSection) {
+            upscalerSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            // Efeito visual de foco
+            upscalerSection.style.borderColor = "#e60000";
+            setTimeout(() => { upscalerSection.style.borderColor = "#4a0a0a"; }, 1000);
+          }
         });
       });
 
@@ -141,13 +151,11 @@ document.addEventListener('DOMContentLoaded', () => {
     carregarGrupos(elements.nick.value);
   });
 
-  // Selects
   ['hotel', 'gesture', 'action', 'size', 'format'].forEach(id => {
     const el = document.getElementById(id + 'Select');
     if(el) el.addEventListener('change', updateAvatar);
   });
 
-  // Rotação Avatar
   elements.rotBtns.forEach(btn => {
     btn.addEventListener('click', () => {
       const dir = btn.getAttribute('data-dir');
@@ -164,7 +172,7 @@ document.addEventListener('DOMContentLoaded', () => {
     updateAvatar();
   });
 
-  // Zoom Avatar (Range)
+  // Zoom Avatar
   elements.zoomRange.addEventListener('input', (e) => {
     const val = e.target.value;
     elements.avatarImg.style.transform = `scale(${val})`;
@@ -172,24 +180,28 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   // --- LOGICA UPSCALER EMBLEMA ---
-  elements.badgeZoomRange.addEventListener('input', (e) => {
-    const val = e.target.value;
-    elements.badgeImg.style.transform = `scale(${val})`;
-    elements.badgeZoomValue.textContent = val + "x";
-  });
+  if(elements.badgeZoomRange) {
+    elements.badgeZoomRange.addEventListener('input', (e) => {
+      const val = e.target.value;
+      if(elements.badgeImg) elements.badgeImg.style.transform = `scale(${val})`;
+      if(elements.badgeZoomValue) elements.badgeZoomValue.textContent = val + "x";
+    });
+  }
 
-  // Download Emblema (Simples)
-  elements.downloadBadgeBtn.addEventListener('click', () => {
-    if (!elements.badgeUrlInput.value) {
-      alert("Selecione um grupo primeiro!");
-      return;
-    }
-    const a = document.createElement('a');
-    a.href = elements.badgeImg.src;
-    a.download = 'emblema_habbo.gif';
-    a.target = '_blank';
-    a.click();
-  });
+  // Download Emblema
+  if(elements.downloadBadgeBtn) {
+    elements.downloadBadgeBtn.addEventListener('click', () => {
+      if (!elements.badgeUrlInput.value) {
+        alert("Selecione um grupo primeiro!");
+        return;
+      }
+      const a = document.createElement('a');
+      a.href = elements.badgeImg.src;
+      a.download = 'emblema_habbo.gif';
+      a.target = '_blank';
+      a.click();
+    });
+  }
 
   // Download Avatar
   elements.downloadBtn.addEventListener('click', () => {
@@ -200,7 +212,6 @@ document.addEventListener('DOMContentLoaded', () => {
     a.click();
   });
 
-  // Copiar URL Avatar
   elements.copyBtn.addEventListener('click', () => {
     elements.urlOutput.select();
     document.execCommand('copy');
