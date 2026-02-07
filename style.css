@@ -95,10 +95,28 @@ input:focus, select:focus { border-color: var(--accent-color); outline: none; }
 
 .mini-btn {
   background: var(--bg-input); border: 1px solid var(--border-color); color: #fff;
-  width: 30px; height: 30px; border-radius: 4px; cursor: pointer;
+  width: 35px; height: 35px; border-radius: 4px; cursor: pointer;
   display: flex; align-items: center; justify-content: center; transition: 0.2s;
 }
 .mini-btn:hover { border-color: var(--accent-color); color: var(--accent-color); }
+
+/* Botão de Renderizar tem destaque e texto (Avatar) ou só ícone */
+.render-btn {
+  background: #2b0b0b;
+  border-color: #661111;
+  width: auto;
+  padding: 0 10px;
+  font-weight: bold;
+  font-size: 11px;
+}
+.render-btn:hover { background: var(--accent-color); color: #fff; }
+
+.btn-divider { width: 1px; height: 25px; background: var(--border-color); margin: 0 5px; }
+
+.status-text {
+  font-size: 10px; color: #888; margin: 5px 0 0 0; font-style: italic;
+}
+
 input[type=range] { width: 100%; accent-color: var(--accent-color); cursor: pointer; }
 .url-copy-area input { background: var(--bg-input); color: #666; font-family: monospace; font-size: 11px; width: 100%; padding: 8px; border: 1px solid var(--border-color); border-radius: 4px; box-sizing: border-box; }
 
@@ -116,16 +134,11 @@ input[type=range] { width: 100%; accent-color: var(--accent-color); cursor: poin
 .badge-display-box img { image-rendering: pixelated; transition: transform 0.1s ease-out; max-width: 80px; }
 #badgePlaceholderText { position: absolute; bottom: 10px; width: 100%; text-align: center; font-size: 11px; color: var(--text-muted); opacity: 0.5; }
 
-/* GRID DE GRUPOS - CORRIGIDO */
 .groups-grid { 
   display: grid; 
-  /* Volta para o tamanho largo dos cartões */
   grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); 
-  gap: 15px; 
-  margin-top: 20px; 
-  width: 100%; /* Garante largura total */
+  gap: 15px; margin-top: 20px; width: 100%; 
 }
-
 .group-card { 
   background: var(--bg-card); border: 1px solid var(--border-color); padding: 15px; border-radius: 6px; 
   text-align: center; display: flex; flex-direction: column; align-items: center; transition: 0.2s; cursor: pointer; 
