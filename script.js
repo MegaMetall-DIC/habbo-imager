@@ -42,7 +42,7 @@ document.addEventListener('DOMContentLoaded', () => {
   let cachedAvatarBlob = null;
   let cachedBadgeBlob = null;
 
-  // --- FUNÇÃO DE NOTIFICAÇÃO LIMPA (SEM ÍCONE) ---
+  // --- FUNÇÃO DE NOTIFICAÇÃO (NEON SMOKE) ---
   function showToast(message) {
     let toast = document.getElementById('customToast');
     if (!toast) {
@@ -52,21 +52,20 @@ document.addEventListener('DOMContentLoaded', () => {
       document.body.appendChild(toast);
     }
     
-    // Apenas texto puro
     toast.textContent = message;
     
-    // Adiciona classe para aparecer
+    // Força reflow para animação funcionar
     requestAnimationFrame(() => {
       toast.className = 'custom-toast show';
     });
     
-    // Remove classe para iniciar efeito de fumaça após 3s
+    // Começa a desaparecer (fumaça) após 3s
     setTimeout(() => {
-        toast.className = 'custom-toast'; // Remove o 'show', ativando o CSS de saída
+        toast.className = 'custom-toast'; 
     }, 3000);
   }
 
-  // --- FUNÇÃO DE GERAÇÃO COM MÚLTIPLOS PROXIES ---
+  // --- FUNÇÃO DE GERAÇÃO COM MÚLTIPLOS PROXIES (ROBUSTA) ---
   async function createUpscaledBlob(imgUrl, scale, statusElement) {
     const proxies = [
       (url) => `https://corsproxy.io/?${encodeURIComponent(url)}`,
@@ -75,14 +74,18 @@ document.addEventListener('DOMContentLoaded', () => {
     ];
 
     let attempt = 1;
+
     for (const getProxyUrl of proxies) {
       try {
-        if(statusElement) statusElement.textContent = `Processando...`;
+        if(statusElement) statusElement.textContent = `Processando (Tentativa ${attempt}/${proxies.length})...`;
         
         const proxyUrl = getProxyUrl(imgUrl);
         const response = await fetch(proxyUrl);
         
-        if (!response.ok) { attempt++; continue; }
+        if (!response.ok) {
+            attempt++;
+            continue; 
+        }
 
         const blob = await response.blob();
         const bitmap = await createImageBitmap(blob);
@@ -97,11 +100,11 @@ document.addEventListener('DOMContentLoaded', () => {
         
         return new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
       } catch (err) {
-        console.warn(`Proxy ${attempt} falhou.`, err);
+        console.warn(`Proxy ${attempt} falhou:`, err);
         attempt++;
       }
     }
-    return null;
+    return null; 
   }
 
   // --- ATUALIZAR AVATAR ---
@@ -226,7 +229,10 @@ document.addEventListener('DOMContentLoaded', () => {
   function selectGroup(g) {
     if(elements.badgeImg) {
         cachedBadgeBlob = null;
-        if(elements.badgeStatus) elements.badgeStatus.textContent = "Novo emblema. Clique na engrenagem.";
+        if(elements.badgeStatus) {
+            elements.badgeStatus.textContent = "Novo emblema. Clique na engrenagem.";
+            elements.badgeStatus.style.color = "#d9b3b3";
+        }
         
         elements.badgeImg.src = g.badge;
         elements.badgeUrlInput.value = g.badge;
@@ -237,7 +243,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  // --- EVENTOS DE RENDERIZAÇÃO ---
+  // --- EVENTOS DE RENDERIZAÇÃO (ENGRENAGEM) ---
 
   elements.btnRenderAvatar.addEventListener('click', async () => {
     const scale = parseFloat(elements.zoomRange.value);
@@ -249,7 +255,7 @@ document.addEventListener('DOMContentLoaded', () => {
       elements.avatarStatus.textContent = `Zoom de ${scale}x PRONTO!`;
       elements.avatarStatus.style.color = "#00cc00"; 
     } else {
-      elements.avatarStatus.textContent = "Erro: Servidores ocupados.";
+      elements.avatarStatus.textContent = "Erro: Servidores ocupados. Tente novamente.";
       elements.avatarStatus.style.color = "#ff4444";
       cachedAvatarBlob = null;
     }
@@ -271,7 +277,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  // --- BOTÕES DE DOWNLOAD E CÓPIA ---
+  // --- BOTÕES DE DOWNLOAD E CÓPIA (COM TOAST) ---
 
   elements.btnDownloadAvatar.addEventListener('click', () => {
     if (cachedAvatarBlob) {
@@ -327,7 +333,7 @@ document.addEventListener('DOMContentLoaded', () => {
       }
   });
 
-  // --- GERAIS ---
+  // --- LISTENERS GERAIS ---
   elements.loadBtn.addEventListener('click', () => {
     updateAvatar();
     carregarGrupos(elements.nick.value);
@@ -382,6 +388,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
+  // START AUTOMÁTICO
   updateAvatar();
   carregarGrupos(elements.nick.value);
 });
