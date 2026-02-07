@@ -16,7 +16,7 @@
         <img src="https://i.imgur.com/Rh7uF6e.png" alt="Logo DIC" class="logo-dic">
         
         <div class="header-text">
-          <h1>HABBO IMAGER <span class="badge-mkt">MKT</span></h1>
+          <h1>HABBO IMAGER</h1>
           <p>Ferramenta exclusiva da <strong>Equipe de Marketing</strong>.</p>
         </div>
 
@@ -138,7 +138,7 @@
 
         <div class="preview-area">
           <div class="avatar-display">
-            <img id="avatarImg" src="" alt="Avatar Preview" crossorigin="anonymous">
+            <img id="avatarImg" src="" alt="Avatar Preview">
           </div>
           
           <div class="rotation-controls">
@@ -156,14 +156,14 @@
         </div>
 
         <div class="zoom-tools-wrapper">
-           <label>Upscaler de Avatar (Zoom Real)</label>
+           <label>Zoom Visual</label>
            <div class="zoom-row">
              <div class="range-container">
                <input type="range" id="zoomRange" min="1" max="5" step="0.5" value="1">
                <span id="zoomValue">1x</span>
              </div>
-             <button id="btnApplyZoomAvatar" class="mini-btn" title="Aplicar/Baixar"><span class="icon">💾</span></button>
-             <button id="btnCopyZoomAvatar" class="mini-btn" title="Copiar Imagem"><span class="icon">📋</span></button>
+             <button id="btnDownloadAvatar" class="mini-btn" title="Baixar"><span class="icon">💾</span></button>
+             <button id="btnCopyAvatar" class="mini-btn" title="Copiar URL"><span class="icon">📋</span></button>
            </div>
         </div>
 
@@ -181,7 +181,7 @@
       
       <div class="upscale-wrapper">
         <div class="badge-display-box">
-           <img id="badgePreviewImg" src="https://images.habbo.com/c_images/Album1584/BADGE_CODE.gif" alt="Emblema" crossorigin="anonymous">
+           <img id="badgePreviewImg" src="https://images.habbo.com/c_images/Album1584/BADGE_CODE.gif" alt="Emblema">
            <p id="badgePlaceholderText">Carregando...</p>
         </div>
         
@@ -193,8 +193,8 @@
                  <input type="range" id="badgeZoomRange" min="1" max="10" step="1" value="1">
                  <span id="badgeZoomValue">1x</span>
                </div>
-               <button id="btnApplyZoomBadge" class="mini-btn" title="Baixar Emblema"><span class="icon">💾</span></button>
-               <button id="btnCopyZoomBadge" class="mini-btn" title="Copiar Emblema"><span class="icon">📋</span></button>
+               <button id="btnDownloadBadge" class="mini-btn" title="Baixar Emblema"><span class="icon">💾</span></button>
+               <button id="btnCopyBadgeLink" class="mini-btn" title="Copiar Link"><span class="icon">📋</span></button>
              </div>
            </div>
            
