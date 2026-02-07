@@ -30,42 +30,56 @@ zoomRange.addEventListener("input", aplicarZoom);
 async function carregarGrupos(nick) {
   groupsContainer.innerHTML = "<p>Carregando grupos...</p>";
 
-  const res = await fetch(
-    "https://raspy-darkness-de40dic-habbo-groups.alvesedu-br.workers.dev/?nick=" +
-      encodeURIComponent(nick)
-  );
+  try {
+    const controller = new AbortController();
+    setTimeout(() => controller.abort(), 8000); // timeout 8s
 
-  const grupos = await res.json();
+    const res = await fetch(
+      "https://raspy-darkness-de40dic-habbo-groups.alvesedu-br.workers.dev/?nick=" +
+        encodeURIComponent(nick),
+      { signal: controller.signal }
+    );
 
-  if (!Array.isArray(grupos) || grupos.length === 0) {
-    groupsContainer.innerHTML = "<p>Nenhum grupo encontrado.</p>";
-    return;
+    if (!res.ok) {
+      throw new Error("Resposta inválida do servidor");
+    }
+
+    const grupos = await res.json();
+
+    if (!Array.isArray(grupos) || grupos.length === 0) {
+      groupsContainer.innerHTML = "<p>Nenhum grupo encontrado.</p>";
+      return;
+    }
+
+    grupos.sort((a, b) => {
+      const aDIC = /\[DIC|\[TJP|ÐIC|Polícia/i.test(a.name);
+      const bDIC = /\[DIC|\[TJP|ÐIC|Polícia/i.test(b.name);
+      return bDIC - aDIC;
+    });
+
+    groupsContainer.innerHTML = "";
+
+    grupos.forEach(g => {
+      const div = document.createElement("div");
+      div.className = "group-card";
+
+      const img = document.createElement("img");
+      img.src = g.badge;
+      img.alt = g.name;
+
+      const span = document.createElement("span");
+      span.textContent = g.name;
+
+      div.appendChild(img);
+      div.appendChild(span);
+      groupsContainer.appendChild(div);
+    });
+
+  } catch (err) {
+    console.error("Erro ao carregar grupos:", err);
+    groupsContainer.innerHTML =
+      "<p>Erro ao carregar grupos. Verifique o Worker.</p>";
   }
-
-  grupos.sort((a, b) => {
-    const aDIC = /\[DIC|\[TJP|ÐIC|Polícia/i.test(a.name);
-    const bDIC = /\[DIC|\[TJP|ÐIC|Polícia/i.test(b.name);
-    return bDIC - aDIC;
-  });
-
-  groupsContainer.innerHTML = "";
-
-  grupos.forEach(g => {
-    const div = document.createElement("div");
-    div.className = "group-card";
-
-    const img = document.createElement("img");
-    img.src = g.badge; // rota oficial do Habbo (igual Mythabbo)
-    img.loading = "lazy";
-    img.alt = g.name;
-
-    const span = document.createElement("span");
-    span.textContent = g.name;
-
-    div.appendChild(img);
-    div.appendChild(span);
-    groupsContainer.appendChild(div);
-  });
 }
 
 btn.onclick = () => {
