@@ -42,9 +42,28 @@ document.addEventListener('DOMContentLoaded', () => {
   let cachedAvatarBlob = null;
   let cachedBadgeBlob = null;
 
-  // --- FUNÇÃO DE GERAÇÃO COM MÚLTIPLOS PROXIES (ROBUSTA) ---
+  // --- FUNÇÃO DE NOTIFICAÇÃO TOAST (NEON SUAVE) ---
+  function showToast(message) {
+    // Cria o elemento se não existir
+    let toast = document.getElementById('customToast');
+    if (!toast) {
+      toast = document.createElement('div');
+      toast.id = 'customToast';
+      toast.className = 'custom-toast';
+      document.body.appendChild(toast);
+    }
+    
+    toast.textContent = message;
+    toast.className = 'custom-toast show';
+    
+    // Desaparece após 3 segundos
+    setTimeout(() => {
+        toast.className = toast.className.replace('show', '');
+    }, 3000);
+  }
+
+  // --- FUNÇÃO DE GERAÇÃO COM MÚLTIPLOS PROXIES ---
   async function createUpscaledBlob(imgUrl, scale, statusElement) {
-    // Lista de proxies em ordem de prioridade (Mais rápido -> Backups)
     const proxies = [
       (url) => `https://corsproxy.io/?${encodeURIComponent(url)}`,
       (url) => `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
@@ -52,7 +71,6 @@ document.addEventListener('DOMContentLoaded', () => {
     ];
 
     let attempt = 1;
-
     for (const getProxyUrl of proxies) {
       try {
         if(statusElement) statusElement.textContent = `Processando (Tentativa ${attempt}/${proxies.length})...`;
@@ -60,10 +78,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const proxyUrl = getProxyUrl(imgUrl);
         const response = await fetch(proxyUrl);
         
-        if (!response.ok) {
-            attempt++;
-            continue; // Se falhar, tenta o próximo
-        }
+        if (!response.ok) { attempt++; continue; }
 
         const blob = await response.blob();
         const bitmap = await createImageBitmap(blob);
@@ -82,7 +97,7 @@ document.addEventListener('DOMContentLoaded', () => {
         attempt++;
       }
     }
-    return null; // Todos falharam
+    return null;
   }
 
   // --- ATUALIZAR AVATAR ---
@@ -207,10 +222,7 @@ document.addEventListener('DOMContentLoaded', () => {
   function selectGroup(g) {
     if(elements.badgeImg) {
         cachedBadgeBlob = null;
-        if(elements.badgeStatus) {
-            elements.badgeStatus.textContent = "Novo emblema. Clique na engrenagem.";
-            elements.badgeStatus.style.color = "#d9b3b3";
-        }
+        if(elements.badgeStatus) elements.badgeStatus.textContent = "Novo emblema. Clique na engrenagem.";
         
         elements.badgeImg.src = g.badge;
         elements.badgeUrlInput.value = g.badge;
@@ -221,20 +233,19 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  // --- EVENTOS DE RENDERIZAÇÃO (ENGRENAGEM) ---
+  // --- EVENTOS DE RENDERIZAÇÃO ---
 
   elements.btnRenderAvatar.addEventListener('click', async () => {
     const scale = parseFloat(elements.zoomRange.value);
     
-    // Passamos o elemento de status para a função atualizar o texto
     const blob = await createUpscaledBlob(elements.avatarImg.src, scale, elements.avatarStatus);
     
     if(blob) {
       cachedAvatarBlob = blob;
       elements.avatarStatus.textContent = `Zoom de ${scale}x PRONTO!`;
-      elements.avatarStatus.style.color = "#00cc00"; // Verde
+      elements.avatarStatus.style.color = "#00cc00"; 
     } else {
-      elements.avatarStatus.textContent = "Erro: Servidores ocupados. Tente novamente.";
+      elements.avatarStatus.textContent = "Erro: Servidores ocupados.";
       elements.avatarStatus.style.color = "#ff4444";
       cachedAvatarBlob = null;
     }
@@ -256,7 +267,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  // --- BOTÕES DE DOWNLOAD E CÓPIA ---
+  // --- BOTÕES DE DOWNLOAD E CÓPIA (COM TOAST) ---
 
   elements.btnDownloadAvatar.addEventListener('click', () => {
     if (cachedAvatarBlob) {
@@ -266,8 +277,9 @@ document.addEventListener('DOMContentLoaded', () => {
         a.download = `${elements.nick.value}_zoom.png`;
         a.click();
         URL.revokeObjectURL(url);
+        showToast("Download iniciado! 💾");
     } else {
-        alert("⚠️ Clique na engrenagem (Aplicar) primeiro!");
+        showToast("⚠️ Clique na engrenagem primeiro!");
     }
   });
 
@@ -275,12 +287,12 @@ document.addEventListener('DOMContentLoaded', () => {
       if (cachedAvatarBlob) {
         try {
             await navigator.clipboard.write([new ClipboardItem({ "image/png": cachedAvatarBlob })]);
-            alert("✅ Imagem copiada!");
+            showToast("Imagem copiada! 📋");
         } catch(e) { 
-            alert("Erro ao copiar. Use o botão de Baixar."); 
+            showToast("Erro ao copiar. Use o botão de Baixar."); 
         }
       } else {
-          alert("⚠️ Clique na engrenagem (Aplicar) primeiro!");
+          showToast("⚠️ Clique na engrenagem primeiro!");
       }
   });
 
@@ -292,8 +304,9 @@ document.addEventListener('DOMContentLoaded', () => {
           a.download = `emblema_zoom.png`;
           a.click();
           URL.revokeObjectURL(url);
+          showToast("Download iniciado! 💾");
       } else {
-          alert("⚠️ Clique na engrenagem (Aplicar) primeiro!");
+          showToast("⚠️ Clique na engrenagem primeiro!");
       }
   });
 
@@ -301,16 +314,16 @@ document.addEventListener('DOMContentLoaded', () => {
       if (cachedBadgeBlob) {
           try {
             await navigator.clipboard.write([new ClipboardItem({ "image/png": cachedBadgeBlob })]);
-            alert("✅ Emblema copiado!");
+            showToast("Emblema copiado! 📋");
           } catch(e) {
-            alert("Erro ao copiar.");
+            showToast("Erro ao copiar.");
           }
       } else {
-          alert("⚠️ Clique na engrenagem (Aplicar) primeiro!");
+          showToast("⚠️ Clique na engrenagem primeiro!");
       }
   });
 
-  // --- LISTENERS GERAIS ---
+  // --- GERAIS ---
   elements.loadBtn.addEventListener('click', () => {
     updateAvatar();
     carregarGrupos(elements.nick.value);
@@ -365,7 +378,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  // START AUTOMÁTICO
   updateAvatar();
   carregarGrupos(elements.nick.value);
 });
