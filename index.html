@@ -108,17 +108,44 @@
         </div>
 
         <div class="actions-row">
-           <button id="downloadBtn" class="btn-outline">BAIXAR IMAGEM</button>
+           <button id="downloadBtn" class="btn-outline">BAIXAR AVATAR</button>
         </div>
 
       </main>
     </div>
 
     <section class="resize-section">
-      <h3>REDIMENSIONAR (ZOOM VISUAL)</h3>
+      <h3>ZOOM DO AVATAR</h3>
       <div class="resize-controls">
         <input type="range" id="zoomRange" min="1" max="4" step="0.1" value="1">
         <span id="zoomValue">100%</span>
+      </div>
+    </section>
+
+    <section class="upscale-section" id="badgeSection">
+      <h3>UPSCALER DE EMBLEMAS</h3>
+      <div class="upscale-container">
+        
+        <div class="badge-preview-box">
+           <img id="badgePreviewImg" src="https://images.habbo.com/c_images/Album1584/BADGE_CODE.gif" alt="Selecione um grupo abaixo">
+           <p id="badgePlaceholderText">Selecione um grupo abaixo para ampliar</p>
+        </div>
+
+        <div class="badge-controls">
+           <div class="control-item">
+             <label>Zoom do Emblema</label>
+             <input type="range" id="badgeZoomRange" min="1" max="10" step="0.5" value="1">
+             <span id="badgeZoomValue">1x</span>
+           </div>
+           
+           <div class="control-item">
+             <label>Código / Link</label>
+             <input type="text" id="badgeUrlInput" readonly placeholder="URL do Emblema">
+           </div>
+
+           <button id="downloadBadgeBtn" class="btn-primary">BAIXAR EMBLEMA</button>
+        </div>
+
       </div>
     </section>
 
