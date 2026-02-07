@@ -2,37 +2,45 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
-  <title>Habbo Imager • Polícia DIC</title>
+  <title>DIC Habbo Imager</title>
+
+  <!-- Favicon -->
+  <link rel="icon" href="https://i.ibb.co/RQ2yQ57/b19134s02114s01094t15094t27114649ec2bd2188f03d2e7406f856c734c3.png">
+
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-<div class="container">
-  <h1>HABBO IMAGER</h1>
-  <h2>Polícia DIC • Equipe de Marketing</h2>
+  <div class="container">
+    <h1>DIC • Habbo Imager</h1>
 
-  <input type="text" id="nick" placeholder="Nick Habbo">
+    <div class="controls">
+      <input type="text" id="nickInput" placeholder="Nick do Habbo">
+      <button id="generateBtn">Gerar Avatar</button>
+    </div>
 
- <label>Upscaler</label>
-<input 
-  type="range" 
-  id="scaleSlider" 
-  min="1" 
-  max="16" 
-  value="8"
->
+    <!-- Avatar -->
+    <div class="avatar-box">
+      <img id="avatarImg" src="" alt="Avatar Habbo">
+    </div>
 
-<p>Zoom: <span id="scaleValue">8x</span></p>
+    <!-- Upscaler -->
+    <div class="upscale-box">
+      <label>Zoom / Upscaler</label>
+      <input type="range" id="zoomRange" min="1" max="6" step="0.1" value="3">
+    </div>
 
+    <!-- Botões -->
+    <div class="actions">
+      <button id="copyBtn">Copiar imagem</button>
+      <button id="downloadBtn">Download PNG</button>
+    </div>
 
-  <button onclick="gerar()">GERAR AVATAR</button>
+    <!-- Grupos -->
+    <h2 class="groups-title">Grupos do Usuário</h2>
+    <div id="groupsContainer" class="groups-grid"></div>
+  </div>
 
-  <canvas id="canvas"></canvas>
-
-  <h3>Badges / Grupos</h3>
-  <div id="badges"></div>
-</div>
-
-<script src="script.js"></script>
+  <script src="script.js"></script>
 </body>
 </html>
