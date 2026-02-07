@@ -17,72 +17,22 @@ document.addEventListener('DOMContentLoaded', () => {
     // Zoom Avatar
     zoomRange: document.getElementById('zoomRange'),
     zoomValue: document.getElementById('zoomValue'),
-    btnApplyZoomAvatar: document.getElementById('btnApplyZoomAvatar'),
-    btnCopyZoomAvatar: document.getElementById('btnCopyZoomAvatar'),
+    btnDownloadAvatar: document.getElementById('btnDownloadAvatar'),
+    btnCopyAvatar: document.getElementById('btnCopyAvatar'),
 
     // Upscaler Badge
     badgeImg: document.getElementById('badgePreviewImg'),
     badgeUrlInput: document.getElementById('badgeUrlInput'),
     badgeZoomRange: document.getElementById('badgeZoomRange'),
     badgeZoomValue: document.getElementById('badgeZoomValue'),
-    btnApplyZoomBadge: document.getElementById('btnApplyZoomBadge'),
-    btnCopyZoomBadge: document.getElementById('btnCopyZoomBadge'),
+    btnDownloadBadge: document.getElementById('btnDownloadBadge'),
+    btnCopyBadgeLink: document.getElementById('btnCopyBadgeLink'),
     badgePlaceholder: document.getElementById('badgePlaceholderText'),
     
     groupsContainer: document.getElementById('groupsContainer')
   };
 
   if (!elements.loadBtn) return;
-
-  function showToast(message, type = 'success') {
-    let toast = document.querySelector('.toast-notification');
-    if (!toast) {
-      toast = document.createElement('div');
-      toast.className = 'toast-notification';
-      document.body.appendChild(toast);
-    }
-    const icon = type === 'success' ? '✅' : '⚠️';
-    toast.innerHTML = `<span class="toast-icon">${icon}</span> <span>${message}</span>`;
-    toast.className = 'show' + (type === 'error' ? ' error' : '');
-    toast.style.borderLeftColor = type === 'error' ? '#ff4444' : '#e60000';
-    setTimeout(() => { toast.classList.remove('show'); }, 3000);
-  }
-
-  // --- LÓGICA DE UPSCALING REAL (CANVAS) ---
-  // Função que cria uma imagem aumentada internamente para download/cópia
-  async function processImage(imgElement, scale, format = 'blob') {
-    return new Promise((resolve, reject) => {
-      const canvas = document.createElement('canvas');
-      const ctx = canvas.getContext('2d');
-      // Desativa suavização para manter pixel art
-      ctx.imageSmoothingEnabled = false;
-
-      // Tamanho original
-      const w = imgElement.naturalWidth;
-      const h = imgElement.naturalHeight;
-
-      if(w === 0 || h === 0) {
-        reject("Imagem não carregada");
-        return;
-      }
-
-      // Tamanho com zoom
-      canvas.width = w * scale;
-      canvas.height = h * scale;
-      
-      // Deixa suavização desativada no contexto também
-      ctx.imageSmoothingEnabled = false;
-
-      // Desenha
-      ctx.drawImage(imgElement, 0, 0, canvas.width, canvas.height);
-
-      if (format === 'blob') {
-        canvas.toBlob(blob => resolve(blob), 'image/png');
-      } else {
-        resolve(canvas.toDataURL('image/png'));
-      }
-    });
-  }
 
   // --- ESTADO INICIAL ---
   let currentState = {
@@ -118,7 +68,6 @@ document.addEventListener('DOMContentLoaded', () => {
     let actionsArray = [];
     if(actionVal !== 'std') actionsArray.push(actionVal);
     
-    // Tratamento Mãos
     if (['wav', 'blow'].includes(rightHandVal)) {
       actionsArray.push(rightHandVal);
     } else if (rightHandVal === 'respect') {
@@ -143,24 +92,18 @@ document.addEventListener('DOMContentLoaded', () => {
     const params = new URLSearchParams(paramsObj);
     const fullUrl = `${baseUrl}?${params.toString()}`;
     
-    // Importante: resetar o scale visual ao mudar a imagem
-    // elements.avatarImg.style.transform = `scale(${elements.zoomRange.value})`; 
-    // ^ Na verdade, mantemos o visual scale atual
-    
     elements.avatarImg.src = fullUrl;
     elements.urlOutput.value = fullUrl;
   }
 
   // --- FUNÇÃO GRUPOS ---
   async function carregarGrupos(nick) {
-    if(!nick) {
-      showToast("Digite um nick!", "error");
-      return;
-    }
+    if(!nick) return;
+
     const originalBtnText = elements.loadBtn.textContent;
-    elements.loadBtn.textContent = "...";
+    elements.loadBtn.textContent = "Buscando...";
     elements.loadBtn.disabled = true;
-    elements.groupsContainer.innerHTML = "<p style='color:#d9b3b3; margin-top:20px'>Buscando...</p>";
+    elements.groupsContainer.innerHTML = "<p style='color:#d9b3b3; margin-top:20px'>Carregando...</p>";
 
     try {
       const controller = new AbortController();
@@ -180,7 +123,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
       if (!Array.isArray(grupos) || grupos.length === 0) {
         elements.groupsContainer.innerHTML = "<p style='color:#b38080'>Nenhum grupo.</p>";
-        showToast("Perfil privado ou sem grupos.", "error");
         return;
       }
 
@@ -191,9 +133,8 @@ document.addEventListener('DOMContentLoaded', () => {
       });
 
       elements.groupsContainer.innerHTML = "";
-      showToast(`${grupos.length} grupos carregados!`);
 
-      let firstGroupCard = null;
+      let firstGroup = null;
 
       grupos.forEach((g, index) => {
         const div = document.createElement("div");
@@ -212,36 +153,20 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Click Event
         div.addEventListener('click', () => {
-          if(elements.badgeImg) {
-            elements.badgeImg.src = g.badge;
-            elements.badgeUrlInput.value = g.badge;
-            elements.badgePlaceholder.style.display = 'none';
-            // Reset zoom ao mudar emblema
-            elements.badgeZoomRange.value = 1;
-            elements.badgeImg.style.transform = `scale(1)`;
-            elements.badgeZoomValue.textContent = "1x";
-            
+            selectGroup(g);
             // Scroll suave
             const section = document.getElementById('badgeSection');
             section.scrollIntoView({ behavior: 'smooth', block: 'center' });
             section.style.borderColor = "#e60000";
             setTimeout(() => { section.style.borderColor = "#4a0a0a"; }, 800);
-          }
         });
-
-        // Salva o primeiro card
-        if (index === 0) firstGroupCard = div;
+        
+        if (index === 0) firstGroup = g;
       });
 
-      // AUTO-SELECT: Clica no primeiro grupo automaticamente
-      if (firstGroupCard) {
-        // Dispara o clique sem scrollar a tela (para não assustar o user)
-        if(elements.badgeImg) {
-          const firstG = grupos[0];
-          elements.badgeImg.src = firstG.badge;
-          elements.badgeUrlInput.value = firstG.badge;
-          elements.badgePlaceholder.style.display = 'none';
-        }
+      // AUTO-SELECT (Sem scroll, apenas carrega a imagem)
+      if (firstGroup) {
+         selectGroup(firstGroup);
       }
 
     } catch (err) {
@@ -252,14 +177,26 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  // --- EVENT LISTENERS ---
+  function selectGroup(g) {
+    if(elements.badgeImg) {
+        elements.badgeImg.src = g.badge;
+        elements.badgeUrlInput.value = g.badge;
+        elements.badgePlaceholder.style.display = 'none';
+        
+        // Reset zoom
+        elements.badgeZoomRange.value = 1;
+        elements.badgeImg.style.transform = `scale(1)`;
+        elements.badgeZoomValue.textContent = "1x";
+    }
+  }
+
+  // --- LISTENERS ---
 
   elements.loadBtn.addEventListener('click', () => {
     updateAvatar();
     carregarGrupos(elements.nick.value);
   });
 
-  // ENTER no input
   elements.nick.addEventListener('keypress', (e) => {
     if (e.key === 'Enter') elements.loadBtn.click();
   });
@@ -294,7 +231,7 @@ document.addEventListener('DOMContentLoaded', () => {
     updateAvatar();
   });
 
-  // --- ZOOM VISUAL ---
+  // ZOOM VISUAL
   elements.zoomRange.addEventListener('input', (e) => {
     const val = e.target.value;
     elements.avatarImg.style.transform = `scale(${val})`;
@@ -307,62 +244,32 @@ document.addEventListener('DOMContentLoaded', () => {
     elements.badgeZoomValue.textContent = val + "x";
   });
 
-  // --- BOTÕES DE AÇÃO (AVATAR) ---
-  // 1. Aplicar/Baixar Avatar Zoomed
-  elements.btnApplyZoomAvatar.addEventListener('click', async () => {
-    try {
-      const scale = parseFloat(elements.zoomRange.value);
-      const blob = await processImage(elements.avatarImg, scale, 'blob');
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `avatar_zoom_${scale}x.png`;
-      a.click();
-      URL.revokeObjectURL(url);
-      showToast("Download iniciado!");
-    } catch (e) { showToast("Erro ao processar imagem", "error"); }
+  // BOTOES SIMPLIFICADOS (Download direto do src)
+  elements.btnDownloadAvatar.addEventListener('click', () => {
+    const a = document.createElement('a');
+    a.href = elements.avatarImg.src;
+    a.download = `${elements.nick.value}.png`;
+    a.click();
+  });
+  
+  elements.btnCopyAvatar.addEventListener('click', () => {
+      elements.urlOutput.select();
+      document.execCommand('copy');
+      alert("Link copiado!");
   });
 
-  // 2. Copiar Avatar Zoomed
-  elements.btnCopyZoomAvatar.addEventListener('click', async () => {
-    try {
-      const scale = parseFloat(elements.zoomRange.value);
-      const blob = await processImage(elements.avatarImg, scale, 'blob');
-      await navigator.clipboard.write([
-        new ClipboardItem({ "image/png": blob })
-      ]);
-      showToast("Imagem copiada com zoom!");
-    } catch (e) { 
-      console.error(e);
-      showToast("Navegador não suporta cópia direta.", "error"); 
-    }
+  elements.btnDownloadBadge.addEventListener('click', () => {
+    if(!elements.badgeUrlInput.value) return;
+    const a = document.createElement('a');
+    a.href = elements.badgeImg.src;
+    a.download = `emblema.gif`;
+    a.click();
   });
 
-  // --- BOTÕES DE AÇÃO (EMBLEMA) ---
-  // 1. Aplicar/Baixar Emblema Zoomed
-  elements.btnApplyZoomBadge.addEventListener('click', async () => {
-    try {
-      const scale = parseFloat(elements.badgeZoomRange.value);
-      const blob = await processImage(elements.badgeImg, scale, 'blob');
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `emblema_zoom_${scale}x.png`;
-      a.click();
-      URL.revokeObjectURL(url);
-    } catch (e) { showToast("Erro/Sem emblema", "error"); }
-  });
-
-  // 2. Copiar Emblema Zoomed
-  elements.btnCopyZoomBadge.addEventListener('click', async () => {
-    try {
-      const scale = parseFloat(elements.badgeZoomRange.value);
-      const blob = await processImage(elements.badgeImg, scale, 'blob');
-      await navigator.clipboard.write([
-        new ClipboardItem({ "image/png": blob })
-      ]);
-      showToast("Emblema copiado!");
-    } catch (e) { showToast("Erro ao copiar", "error"); }
+  elements.btnCopyBadgeLink.addEventListener('click', () => {
+      elements.badgeUrlInput.select();
+      document.execCommand('copy');
+      alert("Link do emblema copiado!");
   });
 
   // Inicializar
