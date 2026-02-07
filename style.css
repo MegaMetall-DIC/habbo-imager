@@ -1,0 +1,72 @@
+body {
+  background: radial-gradient(circle, #2b0000, #0a0000);
+  font-family: Arial, sans-serif;
+  color: white;
+  text-align: center;
+}
+
+.container {
+  max-width: 600px;
+  margin: 40px auto;
+  padding: 30px;
+  border: 2px solid #b30000;
+  box-shadow: 0 0 25px red;
+  background: rgba(0,0,0,0.85);
+}
+
+h1 {
+  color: #ff1a1a;
+  margin-bottom: 5px;
+}
+
+h2 {
+  font-size: 14px;
+  opacity: 0.8;
+  margin-bottom: 20px;
+}
+
+input, select {
+  width: 90%;
+  padding: 10px;
+  margin: 10px 0;
+  background: black;
+  color: white;
+  border: 1px solid red;
+}
+
+button {
+  width: 95%;
+  padding: 12px;
+  background: red;
+  border: none;
+  color: white;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+button:hover {
+  background: darkred;
+}
+
+canvas {
+  margin-top: 20px;
+  background: transparent;
+}
+
+#badges img {
+  margin: 4px;
+  image-rendering: pixelated;
+}
+
+input[type=range] {
+  width: 90%;
+  margin: 15px 0;
+  accent-color: red;
+}
+
+label {
+  display: block;
+  margin-top: 15px;
+  font-weight: bold;
+}
+

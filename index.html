@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Habbo Imager • Polícia DIC</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="container">
+  <h1>HABBO IMAGER</h1>
+  <h2>Polícia DIC • Equipe de Marketing</h2>
+
+  <input type="text" id="nick" placeholder="Nick Habbo">
+
+ <label>Upscaler</label>
+<input 
+  type="range" 
+  id="scaleSlider" 
+  min="1" 
+  max="16" 
+  value="8"
+>
+
+<p>Zoom: <span id="scaleValue">8x</span></p>
+
+
+  <button onclick="gerar()">GERAR AVATAR</button>
+
+  <canvas id="canvas"></canvas>
+
+  <h3>Badges / Grupos</h3>
+  <div id="badges"></div>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
