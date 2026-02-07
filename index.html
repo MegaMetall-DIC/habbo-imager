@@ -156,15 +156,23 @@
         </div>
 
         <div class="zoom-tools-wrapper">
-           <label>Zoom Visual</label>
+           <label>Upscaler de Avatar (Zoom Real)</label>
            <div class="zoom-row">
              <div class="range-container">
                <input type="range" id="zoomRange" min="1" max="5" step="0.5" value="1">
                <span id="zoomValue">1x</span>
              </div>
+             
+             <button id="btnRenderAvatar" class="mini-btn render-btn" title="Aplicar/Renderizar Zoom">
+                ⚙️ Aplicar
+             </button>
+             
+             <div class="btn-divider"></div>
+
              <button id="btnDownloadAvatar" class="mini-btn" title="Baixar"><span class="icon">💾</span></button>
              <button id="btnCopyAvatar" class="mini-btn" title="Copiar URL"><span class="icon">📋</span></button>
            </div>
+           <p class="status-text" id="avatarStatus">Arraste e clique em "Aplicar".</p>
         </div>
 
         <div class="url-copy-area">
@@ -193,9 +201,17 @@
                  <input type="range" id="badgeZoomRange" min="1" max="10" step="1" value="1">
                  <span id="badgeZoomValue">1x</span>
                </div>
+               
+               <button id="btnRenderBadge" class="mini-btn render-btn" title="Aplicar Zoom">
+                 ⚙️
+               </button>
+
+               <div class="btn-divider"></div>
+
                <button id="btnDownloadBadge" class="mini-btn" title="Baixar Emblema"><span class="icon">💾</span></button>
                <button id="btnCopyBadgeLink" class="mini-btn" title="Copiar Link"><span class="icon">📋</span></button>
              </div>
+             <p class="status-text" id="badgeStatus">Clique na engrenagem para aplicar.</p>
            </div>
            
            <div class="control-box">
@@ -215,7 +231,7 @@
 
     <footer>
       <p>Desenvolvido com <span style="color:var(--accent-color)">❤</span> por <strong>MegaMetall</strong></p>
-      <p>© 2026 Departamento de Investigação Criminal - Todos os direitos reservados.</p>
+      <p>© 2024 Departamento de Investigação Criminal - Todos os direitos reservados.</p>
     </footer>
 
   </div>
