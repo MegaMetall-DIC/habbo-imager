@@ -272,6 +272,8 @@ document.addEventListener('DOMContentLoaded', () => {
       alert("Link do emblema copiado!");
   });
 
-  // Inicializar
+  // --- INICIALIZAÇÃO AUTOMÁTICA ---
+  // Carrega o avatar E os grupos do nick padrão (MegaMetall) assim que abre
   updateAvatar();
+  carregarGrupos(elements.nick.value); // <--- A CORREÇÃO ESTÁ AQUI
 });
