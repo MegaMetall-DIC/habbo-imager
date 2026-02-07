@@ -1,5 +1,5 @@
 document.addEventListener('DOMContentLoaded', () => {
-  // Pegando todos os elementos
+  // ELEMENTOS DO DOM
   const elements = {
     nick: document.getElementById('nickInput'),
     hotel: document.getElementById('hotelSelect'),
@@ -14,37 +14,39 @@ document.addEventListener('DOMContentLoaded', () => {
     urlOutput: document.getElementById('urlOutput'),
     copyBtn: document.getElementById('copyUrlBtn'),
     downloadBtn: document.getElementById('downloadBtn'),
+    
+    // Zoom Avatar
     zoomRange: document.getElementById('zoomRange'),
     zoomValue: document.getElementById('zoomValue'),
+    
+    // Upscaler Emblema
+    badgeImg: document.getElementById('badgePreviewImg'),
+    badgeUrlInput: document.getElementById('badgeUrlInput'),
+    badgeZoomRange: document.getElementById('badgeZoomRange'),
+    badgeZoomValue: document.getElementById('badgeZoomValue'),
+    downloadBadgeBtn: document.getElementById('downloadBadgeBtn'),
+    badgePlaceholder: document.getElementById('badgePlaceholderText'),
+
+    // Grupos
     groupsContainer: document.getElementById('groupsContainer')
   };
 
-  // Verifica se o botão principal existe para evitar erros
-  if (!elements.loadBtn) {
-    console.error("ERRO: Botão 'Aplicar' (loadBtn) não foi encontrado no HTML.");
-    return;
-  }
+  if (!elements.loadBtn) return; // Evita erros se o HTML estiver incompleto
 
-  // Estado inicial
+  // --- ESTADO AVATAR ---
   let currentState = {
     direction: 2,
     headDirection: 2,
     headOnly: false
   };
 
-  // --- FUNÇÃO DE ATUALIZAR AVATAR ---
+  // --- FUNÇÃO AVATAR ---
   function updateAvatar() {
     const nick = elements.nick.value.trim();
     const hotel = elements.hotel.value;
-    
-    // Define domínio
-    let domain = 'com.br';
-    if(hotel === 'com') domain = 'com';
-    if(hotel === 'es') domain = 'es';
+    let domain = hotel === 'com' ? 'com' : (hotel === 'es' ? 'es' : 'com.br');
     
     const baseUrl = `https://www.habbo.${domain}/habbo-imaging/avatarimage`;
-    
-    // Constrói URL
     const params = new URLSearchParams({
       user: nick,
       direction: currentState.direction,
@@ -55,24 +57,19 @@ document.addEventListener('DOMContentLoaded', () => {
       img_format: elements.format.value
     });
 
-    if (currentState.headOnly) {
-      params.set('headonly', '1');
-    }
+    if (currentState.headOnly) params.set('headonly', '1');
 
     const fullUrl = `${baseUrl}?${params.toString()}`;
-
-    // Atualiza a imagem e o campo de texto
     elements.avatarImg.src = fullUrl;
     elements.urlOutput.value = fullUrl;
   }
 
-  // --- FUNÇÃO DE CARREGAR GRUPOS ---
+  // --- FUNÇÃO GRUPOS ---
   async function carregarGrupos(nick) {
     if(!nick) return;
     elements.groupsContainer.innerHTML = "<p style='color:#d9b3b3'>Carregando grupos...</p>";
 
     try {
-      // Timeout de 8 segundos para não travar
       const controller = new AbortController();
       setTimeout(() => controller.abort(), 8000); 
 
@@ -82,8 +79,7 @@ document.addEventListener('DOMContentLoaded', () => {
         { signal: controller.signal }
       );
 
-      if (!res.ok) throw new Error("Erro na conexão");
-
+      if (!res.ok) throw new Error("Erro worker");
       const grupos = await res.json();
 
       if (!Array.isArray(grupos) || grupos.length === 0) {
@@ -91,7 +87,7 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
       }
 
-      // Ordenar por relevância (DIC/Polícia)
+      // Ordenar (DIC/Polícia primeiro)
       grupos.sort((a, b) => {
         const aDIC = /\[DIC|\[TJP|ÐIC|Polícia/i.test(a.name);
         const bDIC = /\[DIC|\[TJP|ÐIC|Polícia/i.test(b.name);
@@ -103,7 +99,8 @@ document.addEventListener('DOMContentLoaded', () => {
       grupos.forEach(g => {
         const div = document.createElement("div");
         div.className = "group-card";
-        
+        div.title = "Clique para ampliar este emblema"; // Tooltip
+
         const img = document.createElement("img");
         img.src = g.badge; 
         
@@ -113,6 +110,22 @@ document.addEventListener('DOMContentLoaded', () => {
         div.appendChild(img);
         div.appendChild(span);
         elements.groupsContainer.appendChild(div);
+
+        // --- EVENTO DE CLIQUE NO GRUPO ---
+        div.addEventListener('click', () => {
+          // 1. Atualiza a imagem do upscaler
+          elements.badgeImg.src = g.badge;
+          elements.badgeUrlInput.value = g.badge;
+          elements.badgePlaceholder.style.display = 'none'; // Esconde texto de ajuda
+          
+          // 2. Reseta o zoom do emblema para 1x
+          elements.badgeZoomRange.value = 1;
+          elements.badgeImg.style.transform = `scale(1)`;
+          elements.badgeZoomValue.textContent = "1x";
+
+          // 3. Rola a página até a caixa do upscaler suavemente
+          document.getElementById('badgeSection').scrollIntoView({ behavior: 'smooth' });
+        });
       });
 
     } catch (err) {
@@ -121,64 +134,79 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  // --- EVENTOS (CLIQUES) ---
-  
-  // Botão Aplicar
+  // --- LISTENERS ---
+
   elements.loadBtn.addEventListener('click', () => {
     updateAvatar();
     carregarGrupos(elements.nick.value);
   });
 
-  // Mudança nos Selects (atualiza avatar automaticamente)
+  // Selects
   ['hotel', 'gesture', 'action', 'size', 'format'].forEach(id => {
     const el = document.getElementById(id + 'Select');
     if(el) el.addEventListener('change', updateAvatar);
   });
 
-  // Botões de Rotação
+  // Rotação Avatar
   elements.rotBtns.forEach(btn => {
     btn.addEventListener('click', () => {
       const dir = btn.getAttribute('data-dir');
-      if(dir === '1') {
-        currentState.direction = (currentState.direction + 1) % 8;
-      } else {
-        currentState.direction = (currentState.direction - 1 + 8) % 8;
-      }
+      currentState.direction = dir === '1' 
+        ? (currentState.direction + 1) % 8 
+        : (currentState.direction - 1 + 8) % 8;
       updateAvatar();
     });
   });
 
-  // Botão Apenas Cabeça
   elements.headToggle.addEventListener('click', () => {
     currentState.headOnly = !currentState.headOnly;
     elements.headToggle.classList.toggle('active');
     updateAvatar();
   });
 
-  // Zoom
+  // Zoom Avatar (Range)
   elements.zoomRange.addEventListener('input', (e) => {
     const val = e.target.value;
     elements.avatarImg.style.transform = `scale(${val})`;
     elements.zoomValue.textContent = `${Math.round(val * 100)}%`;
   });
 
-  // Copiar URL
+  // --- LOGICA UPSCALER EMBLEMA ---
+  elements.badgeZoomRange.addEventListener('input', (e) => {
+    const val = e.target.value;
+    elements.badgeImg.style.transform = `scale(${val})`;
+    elements.badgeZoomValue.textContent = val + "x";
+  });
+
+  // Download Emblema (Simples)
+  elements.downloadBadgeBtn.addEventListener('click', () => {
+    if (!elements.badgeUrlInput.value) {
+      alert("Selecione um grupo primeiro!");
+      return;
+    }
+    const a = document.createElement('a');
+    a.href = elements.badgeImg.src;
+    a.download = 'emblema_habbo.gif';
+    a.target = '_blank';
+    a.click();
+  });
+
+  // Download Avatar
+  elements.downloadBtn.addEventListener('click', () => {
+    const a = document.createElement('a');
+    a.href = elements.avatarImg.src;
+    a.download = elements.nick.value + '.png';
+    a.target = '_blank';
+    a.click();
+  });
+
+  // Copiar URL Avatar
   elements.copyBtn.addEventListener('click', () => {
     elements.urlOutput.select();
     document.execCommand('copy');
     alert('Link copiado!');
   });
 
-  // Download
-  elements.downloadBtn.addEventListener('click', () => {
-    const a = document.createElement('a');
-    a.href = elements.avatarImg.src;
-    a.download = elements.nick.value + '_avatar.png';
-    a.target = '_blank';
-    a.click();
-  });
-
-  // INICIALIZAÇÃO
-  // Carrega o avatar padrão ao abrir a página
+  // Iniciar
   updateAvatar();
 });
