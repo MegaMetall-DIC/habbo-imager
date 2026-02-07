@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Habbo Imager - Estilo MYT</title>
+  <title>Habbo Imager - Studio</title>
   <link rel="stylesheet" href="style.css">
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
 </head>
@@ -25,10 +25,10 @@
         <h3>CONFIGURAÇÕES</h3>
         
         <div class="input-group">
-          <label>Habbo</label>
+          <label>Nick do Habbo</label>
           <div class="input-row">
-            <input type="text" id="nickInput" placeholder="Nome do usuário" value="MilitaryTimes">
-            <button id="loadBtn" class="btn-primary">Aplicar</button>
+            <input type="text" id="nickInput" placeholder="Ex: MilitaryTimes" value="MilitaryTimes">
+            <button id="loadBtn" class="btn-primary">APLICAR</button>
           </div>
         </div>
 
@@ -86,7 +86,7 @@
       <main class="preview-panel">
         
         <div class="tip-box">
-          💡 Dica: Use os botões abaixo para rotacionar o avatar.
+          Use os botões abaixo para girar o avatar.
         </div>
 
         <div class="preview-area">
@@ -95,18 +95,20 @@
           </div>
           
           <div class="rotation-controls">
-            <button class="rot-btn" data-dir="1">&lt;</button> <button class="rot-btn" data-dir="3">&gt;</button> </div>
+            <button class="rot-btn" data-dir="1">&lt;</button>
+            <button class="rot-btn" data-dir="3">&gt;</button>
+          </div>
 
           <button id="headOnlyBtn" class="head-toggle">👤 APENAS CABEÇA</button>
         </div>
 
         <div class="url-copy-area">
           <input type="text" id="urlOutput" readonly>
-          <button id="copyUrlBtn">📋</button>
+          <button id="copyUrlBtn" title="Copiar Link">📋</button>
         </div>
 
         <div class="actions-row">
-           <button id="downloadBtn" class="btn-outline">Download Imagem</button>
+           <button id="downloadBtn" class="btn-outline">BAIXAR IMAGEM</button>
         </div>
 
       </main>
@@ -123,7 +125,7 @@
     <section class="groups-section">
       <h3>GRUPOS DO USUÁRIO</h3>
       <div id="groupsContainer" class="groups-grid">
-        <p style="color: #666;">Clique em "Aplicar" para carregar os grupos.</p>
+        <p style="color: #666;">Clique em "APLICAR" para carregar.</p>
       </div>
     </section>
 
