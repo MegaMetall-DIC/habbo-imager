@@ -7,21 +7,25 @@ const downloadBtn = document.getElementById("downloadBtn");
 const groupsContainer = document.getElementById("groupsContainer");
 
 function gerarAvatar(nick) {
-  const zoom = zoomRange.value;
-
   const url =
-    "https://www.habbo.com/habbo-imaging/avatarimage" +
+    "https://www.habbo.com.br/habbo-imaging/avatarimage" +
     "?user=" + encodeURIComponent(nick) +
-    "&direction=2&head_direction=3&action=std" +
-    "&gesture=std&size=l";
+    "&direction=2" +
+    "&head_direction=3" +
+    "&action=std,crr=0" +
+    "&gesture=std" +
+    "&size=l" +
+    "&img_format=png";
 
   avatarImg.src = url;
-  avatarImg.style.transform = `scale(${zoom})`;
+  aplicarZoom();
 }
 
-zoomRange.addEventListener("input", () => {
+function aplicarZoom() {
   avatarImg.style.transform = `scale(${zoomRange.value})`;
-});
+}
+
+zoomRange.addEventListener("input", aplicarZoom);
 
 async function carregarGrupos(nick) {
   groupsContainer.innerHTML = "<p>Carregando grupos...</p>";
@@ -38,7 +42,6 @@ async function carregarGrupos(nick) {
     return;
   }
 
-  // Priorizar DIC / TJP
   grupos.sort((a, b) => {
     const aDIC = /\[DIC|\[TJP|ÐIC|Polícia/i.test(a.name);
     const bDIC = /\[DIC|\[TJP|ÐIC|Polícia/i.test(b.name);
@@ -50,12 +53,10 @@ async function carregarGrupos(nick) {
   grupos.forEach(g => {
     const div = document.createElement("div");
     div.className = "group-card";
-
     div.innerHTML = `
       <img src="${g.badge}">
       <span>${g.name}</span>
     `;
-
     groupsContainer.appendChild(div);
   });
 }
