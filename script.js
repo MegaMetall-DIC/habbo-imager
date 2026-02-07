@@ -42,9 +42,8 @@ document.addEventListener('DOMContentLoaded', () => {
   let cachedAvatarBlob = null;
   let cachedBadgeBlob = null;
 
-  // --- FUNÇÃO DE NOTIFICAÇÃO TOAST (NEON SUAVE) ---
+  // --- FUNÇÃO DE NOTIFICAÇÃO LIMPA (SEM ÍCONE) ---
   function showToast(message) {
-    // Cria o elemento se não existir
     let toast = document.getElementById('customToast');
     if (!toast) {
       toast = document.createElement('div');
@@ -53,12 +52,17 @@ document.addEventListener('DOMContentLoaded', () => {
       document.body.appendChild(toast);
     }
     
+    // Apenas texto puro
     toast.textContent = message;
-    toast.className = 'custom-toast show';
     
-    // Desaparece após 3 segundos
+    // Adiciona classe para aparecer
+    requestAnimationFrame(() => {
+      toast.className = 'custom-toast show';
+    });
+    
+    // Remove classe para iniciar efeito de fumaça após 3s
     setTimeout(() => {
-        toast.className = toast.className.replace('show', '');
+        toast.className = 'custom-toast'; // Remove o 'show', ativando o CSS de saída
     }, 3000);
   }
 
@@ -73,7 +77,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let attempt = 1;
     for (const getProxyUrl of proxies) {
       try {
-        if(statusElement) statusElement.textContent = `Processando (Tentativa ${attempt}/${proxies.length})...`;
+        if(statusElement) statusElement.textContent = `Processando...`;
         
         const proxyUrl = getProxyUrl(imgUrl);
         const response = await fetch(proxyUrl);
@@ -93,7 +97,7 @@ document.addEventListener('DOMContentLoaded', () => {
         
         return new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
       } catch (err) {
-        console.warn(`Proxy ${attempt} falhou:`, err);
+        console.warn(`Proxy ${attempt} falhou.`, err);
         attempt++;
       }
     }
@@ -267,7 +271,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  // --- BOTÕES DE DOWNLOAD E CÓPIA (COM TOAST) ---
+  // --- BOTÕES DE DOWNLOAD E CÓPIA ---
 
   elements.btnDownloadAvatar.addEventListener('click', () => {
     if (cachedAvatarBlob) {
@@ -277,9 +281,9 @@ document.addEventListener('DOMContentLoaded', () => {
         a.download = `${elements.nick.value}_zoom.png`;
         a.click();
         URL.revokeObjectURL(url);
-        showToast("Download iniciado! 💾");
+        showToast("Download Iniciado");
     } else {
-        showToast("⚠️ Clique na engrenagem primeiro!");
+        showToast("Clique na Engrenagem Primeiro");
     }
   });
 
@@ -287,12 +291,12 @@ document.addEventListener('DOMContentLoaded', () => {
       if (cachedAvatarBlob) {
         try {
             await navigator.clipboard.write([new ClipboardItem({ "image/png": cachedAvatarBlob })]);
-            showToast("Imagem copiada! 📋");
+            showToast("Imagem Copiada");
         } catch(e) { 
-            showToast("Erro ao copiar. Use o botão de Baixar."); 
+            showToast("Erro ao Copiar"); 
         }
       } else {
-          showToast("⚠️ Clique na engrenagem primeiro!");
+          showToast("Clique na Engrenagem Primeiro");
       }
   });
 
@@ -304,9 +308,9 @@ document.addEventListener('DOMContentLoaded', () => {
           a.download = `emblema_zoom.png`;
           a.click();
           URL.revokeObjectURL(url);
-          showToast("Download iniciado! 💾");
+          showToast("Download Iniciado");
       } else {
-          showToast("⚠️ Clique na engrenagem primeiro!");
+          showToast("Clique na Engrenagem Primeiro");
       }
   });
 
@@ -314,12 +318,12 @@ document.addEventListener('DOMContentLoaded', () => {
       if (cachedBadgeBlob) {
           try {
             await navigator.clipboard.write([new ClipboardItem({ "image/png": cachedBadgeBlob })]);
-            showToast("Emblema copiado! 📋");
+            showToast("Emblema Copiado");
           } catch(e) {
-            showToast("Erro ao copiar.");
+            showToast("Erro ao Copiar");
           }
       } else {
-          showToast("⚠️ Clique na engrenagem primeiro!");
+          showToast("Clique na Engrenagem Primeiro");
       }
   });
 
