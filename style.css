@@ -55,6 +55,7 @@ input:focus, select:focus { border-color: var(--accent-color); outline: none; }
   transition: 0.2s;
 }
 .btn-primary:hover { background: #ff1a1a; }
+.full-width { width: 100%; padding: 12px 0; }
 
 /* Preview Avatar */
 .preview-panel { display: flex; flex-direction: column; gap: 15px; }
@@ -68,7 +69,6 @@ input:focus, select:focus { border-color: var(--accent-color); outline: none; }
 }
 .avatar-display img { transition: transform 0.2s; image-rendering: pixelated; filter: drop-shadow(0 5px 15px rgba(0,0,0,0.4)); }
 
-/* Controles Avatar */
 .rotation-controls { position: absolute; top: 50%; width: 220px; display: flex; justify-content: space-between; transform: translateY(-50%); pointer-events: none; }
 .rot-btn { pointer-events: auto; background: var(--bg-card); color: #fff; border: 1px solid var(--border-color); width: 35px; height: 35px; border-radius: 50%; cursor: pointer; display: flex; justify-content: center; align-items: center; transition: 0.2s; }
 .rot-btn:hover { background: var(--accent-color); border-color: var(--accent-color); }
@@ -83,7 +83,7 @@ input:focus, select:focus { border-color: var(--accent-color); outline: none; }
 .btn-outline { background: transparent; border: 2px solid var(--border-color); color: #fff; padding: 12px 25px; border-radius: 4px; cursor: pointer; font-weight: bold; text-transform: uppercase; transition: 0.2s; }
 .btn-outline:hover { border-color: var(--accent-color); background: var(--accent-color); }
 
-/* SEÇÕES INFERIORES (Zoom Avatar, Upscaler Emblema, Grupos) */
+/* SEÇÕES INFERIORES */
 .resize-section, .groups-section, .upscale-section { margin-top: 25px; }
 
 .resize-section, .upscale-section { 
@@ -94,54 +94,65 @@ input:focus, select:focus { border-color: var(--accent-color); outline: none; }
 #zoomValue { font-weight: bold; color: var(--accent-color); min-width: 50px; text-align: right; }
 input[type=range] { width: 100%; accent-color: var(--accent-color); cursor: pointer; }
 
-/* ESTILOS DO UPSCALER DE EMBLEMAS */
-.upscale-container {
+/* ESTILOS DO NOVO UPSCALER */
+.upscale-wrapper {
   display: grid;
-  grid-template-columns: 200px 1fr;
-  gap: 25px;
-  align-items: center;
+  grid-template-columns: 1fr 300px; /* Esquerda fluido, direita fixo */
+  gap: 20px;
 }
 
-@media (max-width: 600px) {
-  .upscale-container { grid-template-columns: 1fr; }
+@media (max-width: 768px) {
+  .upscale-wrapper { grid-template-columns: 1fr; }
 }
 
-.badge-preview-box {
+.badge-display-box {
   background: var(--bg-input);
   border: 1px solid var(--border-color);
   border-radius: 8px;
-  height: 200px;
+  height: 250px; /* Altura fixa */
   display: flex;
-  flex-direction: column;
   justify-content: center;
   align-items: center;
-  overflow: hidden;
   position: relative;
+  overflow: hidden;
+  box-shadow: inset 0 0 20px rgba(0,0,0,0.5);
 }
 
-.badge-preview-box img {
-  image-rendering: pixelated; /* Deixa o pixel art quadrado perfeito */
-  transition: transform 0.1s;
-  max-width: 80px; /* Tamanho base inicial */
+.badge-display-box img {
+  image-rendering: pixelated; 
+  transition: transform 0.1s ease-out;
+  max-width: 100px; /* Tamanho inicial base */
 }
 
 #badgePlaceholderText {
   position: absolute;
-  bottom: 10px;
-  font-size: 10px;
-  color: var(--text-muted);
-  text-align: center;
+  bottom: 15px;
   width: 100%;
+  text-align: center;
+  font-size: 12px;
+  color: var(--text-muted);
+  opacity: 0.7;
 }
 
-.badge-controls {
+.badge-controls-sidebar {
   display: flex;
   flex-direction: column;
-  gap: 15px;
+  justify-content: center;
+  gap: 20px;
 }
 
-.control-item { display: flex; flex-direction: column; gap: 5px; }
-#badgeZoomValue { color: var(--accent-color); font-weight: bold; font-size: 14px; text-align: right;}
+.range-with-value {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+#badgeZoomValue {
+  color: var(--accent-color);
+  font-weight: bold;
+  font-size: 16px;
+  min-width: 35px;
+}
 
 /* GRID DE GRUPOS */
 .groups-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 15px; margin-top: 20px; }
