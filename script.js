@@ -29,7 +29,7 @@ document.addEventListener('DOMContentLoaded', () => {
     badgeZoomValue: document.getElementById('badgeZoomValue'),
     btnRenderBadge: document.getElementById('btnRenderBadge'),
     btnDownloadBadge: document.getElementById('btnDownloadBadge'),
-    btnCopyBadge: document.getElementById('btnCopyBadge'), // Certifique-se que no HTML o ID é btnCopyBadge
+    btnCopyBadge: document.getElementById('btnCopyBadge'),
     badgePlaceholder: document.getElementById('badgePlaceholderText'),
     badgeStatus: document.getElementById('badgeStatus'),
     
@@ -38,52 +38,49 @@ document.addEventListener('DOMContentLoaded', () => {
 
   if (!elements.loadBtn) return;
 
-  // Cache para guardar a imagem gerada (Blob)
+  // Cache para guardar a imagem gerada
   let cachedAvatarBlob = null;
   let cachedBadgeBlob = null;
 
-  // --- O SEGREDO: FUNÇÃO DE GERAÇÃO COM PROXY ---
+  // --- FUNÇÃO DE GERAÇÃO COM MÚLTIPLOS PROXIES ---
   async function createUpscaledBlob(imgUrl, scale) {
-    try {
-      // 1. Tenta pegar a imagem direto (rápido)
-      let response = await fetch(imgUrl).catch(() => null);
+    // Lista de proxies para tentar contornar o bloqueio do Habbo
+    const proxies = [
+      (url) => `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
+      (url) => `https://corsproxy.io/?${encodeURIComponent(url)}`
+    ];
 
-      // 2. Se falhar ou não tiver permissão, usa o Proxy (Garante o funcionamento)
-      if (!response || !response.ok) {
-        // console.log("Usando proxy para contornar bloqueio...");
-        // O proxy adiciona os cabeçalhos que o navegador exige
-        const proxyUrl = 'https://corsproxy.io/?' + encodeURIComponent(imgUrl);
-        response = await fetch(proxyUrl);
+    for (const getProxyUrl of proxies) {
+      try {
+        const proxyUrl = getProxyUrl(imgUrl);
+        const response = await fetch(proxyUrl);
+        
+        if (!response.ok) continue; // Se falhar, tenta o próximo
+
+        const blob = await response.blob();
+        const bitmap = await createImageBitmap(blob);
+        
+        const canvas = document.createElement('canvas');
+        canvas.width = bitmap.width * scale;
+        canvas.height = bitmap.height * scale;
+        const ctx = canvas.getContext('2d');
+        
+        ctx.imageSmoothingEnabled = false;
+        ctx.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
+        
+        return new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
+      } catch (err) {
+        console.warn("Proxy falhou, tentando próximo...", err);
       }
-
-      if (!response.ok) throw new Error("Falha ao baixar imagem.");
-
-      const blob = await response.blob();
-      const bitmap = await createImageBitmap(blob);
-      
-      const canvas = document.createElement('canvas');
-      canvas.width = bitmap.width * scale;
-      canvas.height = bitmap.height * scale;
-      const ctx = canvas.getContext('2d');
-      
-      // Mantém a nitidez do pixel art
-      ctx.imageSmoothingEnabled = false;
-      ctx.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
-      
-      return new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
-    } catch (err) {
-      console.error("Erro no Upscaler:", err);
-      return null;
     }
+    return null; // Todos falharam
   }
 
-  // --- ESTADO AVATAR ---
-  let currentState = {
-    direction: 2, headDirection: 2, headOnly: false, size: 'm'
-  };
+  // --- ATUALIZAR AVATAR ---
+  let currentState = { direction: 2, headDirection: 2, headOnly: false, size: 'm' };
 
   function updateAvatar() {
-    cachedAvatarBlob = null; // Reset cache
+    cachedAvatarBlob = null;
     if(elements.avatarStatus) {
       elements.avatarStatus.textContent = "Alterado. Clique na engrenagem para aplicar zoom.";
       elements.avatarStatus.style.color = "#d9b3b3";
@@ -96,42 +93,32 @@ document.addEventListener('DOMContentLoaded', () => {
     let domain = hotel === 'com' ? 'com' : (hotel === 'es' ? 'es' : 'com.br');
     const baseUrl = `https://www.habbo.${domain}/habbo-imaging/avatarimage`;
     
-    let actionVal = elements.action.value;
-    const rightHandVal = elements.rightHand.value;
-    const leftHandVal = elements.leftHand.value;
-    let gestureVal = elements.gesture.value;
-
     let paramsObj = {
       user: nick,
       direction: currentState.direction,
       head_direction: currentState.direction,
-      gesture: gestureVal,
+      gesture: elements.gesture.value,
       size: currentState.size,
       img_format: elements.format.value
     };
 
+    // Montagem das Ações (Mãos, Itens, Gestos)
     let actionsArray = [];
-    if(actionVal !== 'std') actionsArray.push(actionVal);
+    if(elements.action.value !== 'std') actionsArray.push(elements.action.value);
     
-    if (['wav', 'blow'].includes(rightHandVal)) {
-      actionsArray.push(rightHandVal);
-    } else if (rightHandVal === 'respect') {
-      gestureVal = 'srp'; 
-    } else if (parseInt(rightHandVal) > 0) {
-       actionsArray.push(`crr=${rightHandVal}`);
-    }
+    const rh = elements.rightHand.value;
+    if (['wav', 'blow'].includes(rh)) actionsArray.push(rh);
+    else if (rh === 'respect') paramsObj.gesture = 'srp';
+    else if (parseInt(rh) > 0) actionsArray.push(`crr=${rh}`);
 
-    if (parseInt(leftHandVal) > 0) {
+    const lh = elements.leftHand.value;
+    if (parseInt(lh) > 0) {
+       // Lista de bebidas conhecidas vs itens normais
        const drinks = ['1','2','3','5','6','9','33','42'];
-       if(drinks.includes(leftHandVal)) {
-         actionsArray.push(`drk=${leftHandVal}`);
-       } else {
-         actionsArray.push(`crr=${leftHandVal}`);
-       }
+       actionsArray.push(drinks.includes(lh) ? `drk=${lh}` : `crr=${lh}`);
     }
 
     if(actionsArray.length > 0) paramsObj.action = actionsArray.join(',');
-    paramsObj.gesture = gestureVal;
     if (currentState.headOnly) paramsObj.headonly = '1';
 
     const params = new URLSearchParams(paramsObj);
@@ -144,8 +131,8 @@ document.addEventListener('DOMContentLoaded', () => {
   // --- CARREGAR GRUPOS ---
   async function carregarGrupos(nick) {
     if(!nick) return;
-    const originalBtnText = elements.loadBtn.textContent;
-    elements.loadBtn.textContent = "Buscando...";
+    const originalText = elements.loadBtn.textContent;
+    elements.loadBtn.textContent = "...";
     elements.loadBtn.disabled = true;
     elements.groupsContainer.innerHTML = "<p style='color:#d9b3b3; margin-top:20px'>Carregando...</p>";
 
@@ -161,7 +148,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       if (!res.ok) throw new Error("Erro worker");
       const grupos = await res.json();
-      elements.loadBtn.textContent = originalBtnText;
+      elements.loadBtn.textContent = originalText;
       elements.loadBtn.disabled = false;
 
       if (!Array.isArray(grupos) || grupos.length === 0) {
@@ -182,10 +169,9 @@ document.addEventListener('DOMContentLoaded', () => {
         const div = document.createElement("div");
         div.className = "group-card";
         div.title = g.name;
-
+        
         const img = document.createElement("img");
         img.src = g.badge; 
-        
         const span = document.createElement("span");
         span.textContent = g.name.substring(0, 20) + (g.name.length > 20 ? '...' : '');
 
@@ -195,34 +181,26 @@ document.addEventListener('DOMContentLoaded', () => {
 
         div.addEventListener('click', () => {
             selectGroup(g);
-            // Scroll suave
-            const section = document.getElementById('badgeSection');
-            section.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            section.style.borderColor = "#e60000";
-            setTimeout(() => { section.style.borderColor = "#4a0a0a"; }, 800);
+            document.getElementById('badgeSection').scrollIntoView({ behavior: 'smooth', block: 'center' });
         });
         
         if (index === 0) firstGroup = g;
       });
 
-      // Seleciona o primeiro grupo automaticamente
       if (firstGroup) selectGroup(firstGroup);
 
     } catch (err) {
       console.error(err);
-      elements.loadBtn.textContent = originalBtnText;
+      elements.loadBtn.textContent = originalText;
       elements.loadBtn.disabled = false;
-      elements.groupsContainer.innerHTML = "<p style='color:#e60000'>Erro ao buscar grupos.</p>";
+      elements.groupsContainer.innerHTML = "<p style='color:#e60000'>Erro ao buscar.</p>";
     }
   }
 
   function selectGroup(g) {
     if(elements.badgeImg) {
-        cachedBadgeBlob = null; 
-        if(elements.badgeStatus) {
-            elements.badgeStatus.textContent = "Novo emblema. Clique na engrenagem.";
-            elements.badgeStatus.style.color = "#d9b3b3";
-        }
+        cachedBadgeBlob = null;
+        if(elements.badgeStatus) elements.badgeStatus.textContent = "Novo emblema. Clique na engrenagem.";
         
         elements.badgeImg.src = g.badge;
         elements.badgeUrlInput.value = g.badge;
@@ -233,21 +211,19 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  // --- BOTÕES DE RENDERIZAÇÃO (APLICAR) ---
+  // --- EVENTOS DE RENDERIZAÇÃO (ENGRENAGEM) ---
 
   elements.btnRenderAvatar.addEventListener('click', async () => {
     const scale = parseFloat(elements.zoomRange.value);
     elements.avatarStatus.textContent = "Processando (Aguarde)...";
     
-    // Chama a função com Proxy
     const blob = await createUpscaledBlob(elements.avatarImg.src, scale);
-    
     if(blob) {
       cachedAvatarBlob = blob;
-      elements.avatarStatus.textContent = `Zoom de ${scale}x PRONTO! Pode copiar/baixar.`;
-      elements.avatarStatus.style.color = "#00cc00"; // Verde
+      elements.avatarStatus.textContent = `Zoom de ${scale}x PRONTO!`;
+      elements.avatarStatus.style.color = "#00cc00";
     } else {
-      elements.avatarStatus.textContent = "Erro de conexão com a imagem.";
+      elements.avatarStatus.textContent = "Erro no Upscaler (Tente novamente).";
       elements.avatarStatus.style.color = "#ff4444";
       cachedAvatarBlob = null;
     }
@@ -258,21 +234,18 @@ document.addEventListener('DOMContentLoaded', () => {
     elements.badgeStatus.textContent = "Processando...";
     
     const blob = await createUpscaledBlob(elements.badgeImg.src, scale);
-    
     if(blob) {
       cachedBadgeBlob = blob;
       elements.badgeStatus.textContent = `Zoom de ${scale}x PRONTO!`;
       elements.badgeStatus.style.color = "#00cc00";
     } else {
-      elements.badgeStatus.textContent = "Erro ao processar imagem.";
+      elements.badgeStatus.textContent = "Erro no Upscaler.";
       elements.badgeStatus.style.color = "#ff4444";
-      cachedBadgeBlob = null;
     }
   });
 
-  // --- BOTÕES DE AÇÃO (Somente Imagem) ---
+  // --- BOTÕES DE DOWNLOAD E CÓPIA ---
 
-  // 1. Download Avatar
   elements.btnDownloadAvatar.addEventListener('click', () => {
     if (cachedAvatarBlob) {
         const url = URL.createObjectURL(cachedAvatarBlob);
@@ -282,27 +255,23 @@ document.addEventListener('DOMContentLoaded', () => {
         a.click();
         URL.revokeObjectURL(url);
     } else {
-        alert("⚠️ Clique no ícone de engrenagem (Aplicar) primeiro para gerar a imagem!");
+        alert("⚠️ Clique na engrenagem (Aplicar) primeiro!");
     }
   });
 
-  // 2. Copiar Avatar (FORÇAR IMAGEM)
   elements.btnCopyAvatar.addEventListener('click', async () => {
       if (cachedAvatarBlob) {
         try {
-            // Tenta escrever a imagem no clipboard
             await navigator.clipboard.write([new ClipboardItem({ "image/png": cachedAvatarBlob })]);
-            alert("✅ Imagem copiada com sucesso!");
+            alert("✅ Imagem copiada!");
         } catch(e) { 
-            console.error(e);
-            alert("Erro ao copiar: O navegador bloqueou ou não suporta essa ação."); 
+            alert("Erro ao copiar. Use o botão de Baixar."); 
         }
       } else {
-          alert("⚠️ Clique no ícone de engrenagem (Aplicar) primeiro para gerar a imagem!");
+          alert("⚠️ Clique na engrenagem (Aplicar) primeiro!");
       }
   });
 
-  // 3. Download Emblema
   elements.btnDownloadBadge.addEventListener('click', () => {
       if (cachedBadgeBlob) {
           const url = URL.createObjectURL(cachedBadgeBlob);
@@ -312,27 +281,24 @@ document.addEventListener('DOMContentLoaded', () => {
           a.click();
           URL.revokeObjectURL(url);
       } else {
-          alert("⚠️ Clique no ícone de engrenagem (Aplicar) primeiro!");
+          alert("⚠️ Clique na engrenagem (Aplicar) primeiro!");
       }
   });
 
-  // 4. Copiar Emblema (FORÇAR IMAGEM)
   elements.btnCopyBadge.addEventListener('click', async () => {
       if (cachedBadgeBlob) {
           try {
             await navigator.clipboard.write([new ClipboardItem({ "image/png": cachedBadgeBlob })]);
-            alert("✅ Emblema copiado com sucesso!");
+            alert("✅ Emblema copiado!");
           } catch(e) {
-            console.error(e);
-            alert("Erro ao copiar imagem.");
+            alert("Erro ao copiar.");
           }
       } else {
-          alert("⚠️ Clique no ícone de engrenagem (Aplicar) primeiro!");
+          alert("⚠️ Clique na engrenagem (Aplicar) primeiro!");
       }
   });
 
-  // --- EVENTOS GERAIS ---
-  
+  // --- LISTENERS GERAIS ---
   elements.loadBtn.addEventListener('click', () => {
     updateAvatar();
     carregarGrupos(elements.nick.value);
@@ -358,9 +324,7 @@ document.addEventListener('DOMContentLoaded', () => {
   elements.rotBtns.forEach(btn => {
     btn.addEventListener('click', () => {
       const dir = btn.getAttribute('data-dir');
-      currentState.direction = dir === '1' 
-        ? (currentState.direction + 1) % 8 
-        : (currentState.direction - 1 + 8) % 8;
+      currentState.direction = dir === '1' ? (currentState.direction + 1) % 8 : (currentState.direction - 1 + 8) % 8;
       updateAvatar();
     });
   });
@@ -369,22 +333,20 @@ document.addEventListener('DOMContentLoaded', () => {
     elements.headToggle.classList.toggle('active');
     updateAvatar();
   });
-
+  
+  // Resetar status ao mexer no zoom
   elements.zoomRange.addEventListener('input', (e) => {
-    const val = e.target.value;
-    elements.avatarImg.style.transform = `scale(${val})`;
-    elements.zoomValue.textContent = val + "x";
+    elements.avatarImg.style.transform = `scale(${e.target.value})`;
+    elements.zoomValue.textContent = e.target.value + "x";
     cachedAvatarBlob = null;
     if(elements.avatarStatus) {
         elements.avatarStatus.textContent = "Zoom alterado. Clique na engrenagem.";
         elements.avatarStatus.style.color = "#d9b3b3";
     }
   });
-
   elements.badgeZoomRange.addEventListener('input', (e) => {
-    const val = e.target.value;
-    elements.badgeImg.style.transform = `scale(${val})`;
-    elements.badgeZoomValue.textContent = val + "x";
+    elements.badgeImg.style.transform = `scale(${e.target.value})`;
+    elements.badgeZoomValue.textContent = e.target.value + "x";
     cachedBadgeBlob = null;
     if(elements.badgeStatus) {
         elements.badgeStatus.textContent = "Zoom alterado. Clique na engrenagem.";
