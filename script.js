@@ -14,6 +14,9 @@ document.addEventListener('DOMContentLoaded', () => {
     rotBtns: document.querySelectorAll('.rot-btn'),
     urlOutput: document.getElementById('urlOutput'),
     
+    // Campo de Missão (Motto)
+    mottoDisplay: document.getElementById('mottoDisplay'),
+
     // Zoom Avatar
     zoomRange: document.getElementById('zoomRange'),
     zoomValue: document.getElementById('zoomValue'),
@@ -38,7 +41,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
   if (!elements.loadBtn) return;
 
-  // Cache para guardar a imagem gerada
   let cachedAvatarBlob = null;
   let cachedBadgeBlob = null;
 
@@ -51,21 +53,46 @@ document.addEventListener('DOMContentLoaded', () => {
       toast.className = 'custom-toast';
       document.body.appendChild(toast);
     }
-    
     toast.textContent = message;
-    
-    // Força reflow para animação funcionar
-    requestAnimationFrame(() => {
-      toast.className = 'custom-toast show';
-    });
-    
-    // Começa a desaparecer (fumaça) após 3s
-    setTimeout(() => {
-        toast.className = 'custom-toast'; 
-    }, 3000);
+    requestAnimationFrame(() => { toast.className = 'custom-toast show'; });
+    setTimeout(() => { toast.className = 'custom-toast'; }, 3000);
   }
 
-  // --- FUNÇÃO DE GERAÇÃO COM MÚLTIPLOS PROXIES (ROBUSTA) ---
+  // --- FUNÇÃO PARA BUSCAR MISSÃO (MOTTO) ---
+  // Usa um proxy simples para replicar a lógica do Google Apps Script
+  async function fetchMotto(nick) {
+    if(!nick) return;
+    elements.mottoDisplay.textContent = "Buscando...";
+    elements.mottoDisplay.style.color = "#d9b3b3";
+
+    // Define domínio
+    const domain = elements.hotel.value === 'es' ? 'es' : (elements.hotel.value === 'com' ? 'com' : 'com.br');
+    
+    // URL da API Habbo
+    const targetUrl = `https://www.habbo.${domain}/api/public/users?name=${encodeURIComponent(nick)}`;
+    
+    // URL do Proxy (AllOrigins - funciona igual UrlFetchApp)
+    const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(targetUrl)}`;
+
+    try {
+        const response = await fetch(proxyUrl);
+        if(!response.ok) throw new Error("Usuário não encontrado");
+        
+        const data = await response.json();
+        
+        if (data.motto) {
+            elements.mottoDisplay.textContent = data.motto;
+            elements.mottoDisplay.style.color = "#fff"; // Destaque branco
+        } else {
+            elements.mottoDisplay.textContent = "Sem missão.";
+        }
+    } catch (error) {
+        console.warn("Erro ao buscar motto:", error);
+        elements.mottoDisplay.textContent = "Usuário não encontrado.";
+    }
+  }
+
+  // --- FUNÇÃO DE GERAÇÃO DE IMAGEM COM PROXIES ---
   async function createUpscaledBlob(imgUrl, scale, statusElement) {
     const proxies = [
       (url) => `https://corsproxy.io/?${encodeURIComponent(url)}`,
@@ -74,37 +101,29 @@ document.addEventListener('DOMContentLoaded', () => {
     ];
 
     let attempt = 1;
-
     for (const getProxyUrl of proxies) {
       try {
         if(statusElement) statusElement.textContent = `Processando (Tentativa ${attempt}/${proxies.length})...`;
         
         const proxyUrl = getProxyUrl(imgUrl);
         const response = await fetch(proxyUrl);
-        
-        if (!response.ok) {
-            attempt++;
-            continue; 
-        }
+        if (!response.ok) { attempt++; continue; }
 
         const blob = await response.blob();
         const bitmap = await createImageBitmap(blob);
-        
         const canvas = document.createElement('canvas');
         canvas.width = bitmap.width * scale;
         canvas.height = bitmap.height * scale;
         const ctx = canvas.getContext('2d');
-        
         ctx.imageSmoothingEnabled = false;
         ctx.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
         
         return new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
       } catch (err) {
-        console.warn(`Proxy ${attempt} falhou:`, err);
         attempt++;
       }
     }
-    return null; 
+    return null;
   }
 
   // --- ATUALIZAR AVATAR ---
@@ -229,10 +248,7 @@ document.addEventListener('DOMContentLoaded', () => {
   function selectGroup(g) {
     if(elements.badgeImg) {
         cachedBadgeBlob = null;
-        if(elements.badgeStatus) {
-            elements.badgeStatus.textContent = "Novo emblema. Clique na engrenagem.";
-            elements.badgeStatus.style.color = "#d9b3b3";
-        }
+        if(elements.badgeStatus) elements.badgeStatus.textContent = "Novo emblema. Clique na engrenagem.";
         
         elements.badgeImg.src = g.badge;
         elements.badgeUrlInput.value = g.badge;
@@ -243,13 +259,11 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  // --- EVENTOS DE RENDERIZAÇÃO (ENGRENAGEM) ---
+  // --- EVENTOS DE RENDERIZAÇÃO ---
 
   elements.btnRenderAvatar.addEventListener('click', async () => {
     const scale = parseFloat(elements.zoomRange.value);
-    
     const blob = await createUpscaledBlob(elements.avatarImg.src, scale, elements.avatarStatus);
-    
     if(blob) {
       cachedAvatarBlob = blob;
       elements.avatarStatus.textContent = `Zoom de ${scale}x PRONTO!`;
@@ -263,9 +277,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   elements.btnRenderBadge.addEventListener('click', async () => {
     const scale = parseFloat(elements.badgeZoomRange.value);
-    
     const blob = await createUpscaledBlob(elements.badgeImg.src, scale, elements.badgeStatus);
-    
     if(blob) {
       cachedBadgeBlob = blob;
       elements.badgeStatus.textContent = `Zoom de ${scale}x PRONTO!`;
@@ -277,7 +289,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  // --- BOTÕES DE DOWNLOAD E CÓPIA (COM TOAST) ---
+  // --- BOTÕES DE DOWNLOAD E CÓPIA ---
 
   elements.btnDownloadAvatar.addEventListener('click', () => {
     if (cachedAvatarBlob) {
@@ -298,9 +310,7 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             await navigator.clipboard.write([new ClipboardItem({ "image/png": cachedAvatarBlob })]);
             showToast("Imagem Copiada");
-        } catch(e) { 
-            showToast("Erro ao Copiar"); 
-        }
+        } catch(e) { showToast("Erro ao Copiar"); }
       } else {
           showToast("Clique na Engrenagem Primeiro");
       }
@@ -325,18 +335,17 @@ document.addEventListener('DOMContentLoaded', () => {
           try {
             await navigator.clipboard.write([new ClipboardItem({ "image/png": cachedBadgeBlob })]);
             showToast("Emblema Copiado");
-          } catch(e) {
-            showToast("Erro ao Copiar");
-          }
+          } catch(e) { showToast("Erro ao Copiar"); }
       } else {
           showToast("Clique na Engrenagem Primeiro");
       }
   });
 
-  // --- LISTENERS GERAIS ---
+  // --- GERAIS ---
   elements.loadBtn.addEventListener('click', () => {
     updateAvatar();
     carregarGrupos(elements.nick.value);
+    fetchMotto(elements.nick.value); // BUSCA A MISSÃO
   });
   elements.nick.addEventListener('keypress', (e) => {
     if (e.key === 'Enter') elements.loadBtn.click();
@@ -391,4 +400,5 @@ document.addEventListener('DOMContentLoaded', () => {
   // START AUTOMÁTICO
   updateAvatar();
   carregarGrupos(elements.nick.value);
+  fetchMotto(elements.nick.value); // BUSCA AO INICIAR
 });
