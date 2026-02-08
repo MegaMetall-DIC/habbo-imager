@@ -14,8 +14,7 @@ document.addEventListener('DOMContentLoaded', () => {
     rotBtns: document.querySelectorAll('.rot-btn'),
     urlOutput: document.getElementById('urlOutput'),
     
-    // Campo de Missão (Motto)
-    mottoDisplay: document.getElementById('mottoDisplay'),
+    mottoDisplay: document.getElementById('mottoDisplay'), // Campo da Patente
 
     // Zoom Avatar
     zoomRange: document.getElementById('zoomRange'),
@@ -44,7 +43,42 @@ document.addEventListener('DOMContentLoaded', () => {
   let cachedAvatarBlob = null;
   let cachedBadgeBlob = null;
 
-  // --- FUNÇÃO DE NOTIFICAÇÃO (NEON SMOKE) ---
+  // --- LISTA DE PATENTES (Ordem: As maiores/compostas primeiro para evitar erro de leitura) ---
+  const RANK_LIST = [
+    // Militares (Nomes Compostos e Longos)
+    "Comandante-Geral", "C-Geral", "Tenente-Coronel", "T-Cel", "Vice-Presidente", 
+    "Superintendente", "Subtenente", "Aspirante", "Comandante", "Presidente", 
+    "Inspetor", "Supremo", "Coronel", "Capitão", "Tenente", "Sargento", "Soldado", 
+    
+    // Executivos (Nomes Compostos e Longos)
+    "Líder-Executivo", "L-Exe", "Administrador", "Investigador", "Coordenador", 
+    "Chanceler", "Supervisor", "Advogado", "Delegado", "Acionista", "Promotor", 
+    "Analista", "Detetive", "Agente", "Líder", "Sócio",
+
+    // Abreviações Militares (Curtas)
+    "Major", "Maj", "Cabo", "Sgt", "Sub", "Asp", "Ten", "Cap", "Cel", "Insp", "Super", "Cmd",
+
+    // Abreviações Executivas (Curtas)
+    "Adv", "Adm", "Del", "Inv", "Det", "Sup"
+  ];
+
+  // --- FUNÇÃO AUXILIAR: EXTRAIR PATENTE ---
+  function extractRankFromMotto(motto) {
+    if (!motto) return "Não faz parte do DIC.";
+    
+    // Converte para minusculo para busca, mas retorna o nome original da lista
+    const lowerMotto = motto.toLowerCase();
+
+    for (const rank of RANK_LIST) {
+        // Verifica se a patente está contida na missão
+        if (lowerMotto.includes(rank.toLowerCase())) {
+            return rank; // Retorna a patente formatada como está na lista
+        }
+    }
+    return "Não faz parte do DIC.";
+  }
+
+  // --- FUNÇÃO DE NOTIFICAÇÃO ---
   function showToast(message) {
     let toast = document.getElementById('customToast');
     if (!toast) {
@@ -58,41 +92,7 @@ document.addEventListener('DOMContentLoaded', () => {
     setTimeout(() => { toast.className = 'custom-toast'; }, 3000);
   }
 
-  // --- FUNÇÃO PARA BUSCAR MISSÃO (MOTTO) ---
-  // Usa um proxy simples para replicar a lógica do Google Apps Script
-  async function fetchMotto(nick) {
-    if(!nick) return;
-    elements.mottoDisplay.textContent = "Buscando...";
-    elements.mottoDisplay.style.color = "#d9b3b3";
-
-    // Define domínio
-    const domain = elements.hotel.value === 'es' ? 'es' : (elements.hotel.value === 'com' ? 'com' : 'com.br');
-    
-    // URL da API Habbo
-    const targetUrl = `https://www.habbo.${domain}/api/public/users?name=${encodeURIComponent(nick)}`;
-    
-    // URL do Proxy (AllOrigins - funciona igual UrlFetchApp)
-    const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(targetUrl)}`;
-
-    try {
-        const response = await fetch(proxyUrl);
-        if(!response.ok) throw new Error("Usuário não encontrado");
-        
-        const data = await response.json();
-        
-        if (data.motto) {
-            elements.mottoDisplay.textContent = data.motto;
-            elements.mottoDisplay.style.color = "#fff"; // Destaque branco
-        } else {
-            elements.mottoDisplay.textContent = "Sem missão.";
-        }
-    } catch (error) {
-        console.warn("Erro ao buscar motto:", error);
-        elements.mottoDisplay.textContent = "Usuário não encontrado.";
-    }
-  }
-
-  // --- FUNÇÃO DE GERAÇÃO DE IMAGEM COM PROXIES ---
+  // --- FUNÇÃO DE PROXIES ---
   async function createUpscaledBlob(imgUrl, scale, statusElement) {
     const proxies = [
       (url) => `https://corsproxy.io/?${encodeURIComponent(url)}`,
@@ -104,7 +104,6 @@ document.addEventListener('DOMContentLoaded', () => {
     for (const getProxyUrl of proxies) {
       try {
         if(statusElement) statusElement.textContent = `Processando (Tentativa ${attempt}/${proxies.length})...`;
-        
         const proxyUrl = getProxyUrl(imgUrl);
         const response = await fetch(proxyUrl);
         if (!response.ok) { attempt++; continue; }
@@ -124,6 +123,45 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     }
     return null;
+  }
+
+  // --- BUSCAR MISSÃO (PATENTE) ---
+  async function fetchMotto(nick) {
+    if(!nick) return;
+    elements.mottoDisplay.textContent = "Verificando...";
+    elements.mottoDisplay.style.color = "#d9b3b3";
+
+    const domain = elements.hotel.value === 'es' ? 'es' : (elements.hotel.value === 'com' ? 'com' : 'com.br');
+    const targetUrl = `https://www.habbo.${domain}/api/public/users?name=${encodeURIComponent(nick)}`;
+    const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(targetUrl)}`;
+
+    try {
+        const response = await fetch(proxyUrl);
+        if(!response.ok) throw new Error("Erro API");
+        
+        const data = await response.json();
+        
+        if (data.motto) {
+            // Usa a nova função de filtro
+            const detectedRank = extractRankFromMotto(data.motto);
+            elements.mottoDisplay.textContent = detectedRank;
+            
+            // Cor de destaque se for do DIC, cor neutra se não for
+            if (detectedRank !== "Não faz parte do DIC.") {
+                elements.mottoDisplay.style.color = "#00ff00"; // Verde Neon ou Branco (#fff)
+                elements.mottoDisplay.style.fontWeight = "bold";
+            } else {
+                elements.mottoDisplay.style.color = "#ff4444"; // Vermelho
+            }
+        } else {
+            elements.mottoDisplay.textContent = "Não faz parte do DIC.";
+            elements.mottoDisplay.style.color = "#ff4444";
+        }
+    } catch (error) {
+        console.warn("Erro ao buscar motto:", error);
+        elements.mottoDisplay.textContent = "Usuário não encontrado.";
+        elements.mottoDisplay.style.color = "#d9b3b3";
+    }
   }
 
   // --- ATUALIZAR AVATAR ---
@@ -259,8 +297,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  // --- EVENTOS DE RENDERIZAÇÃO ---
-
+  // --- RENDER ---
   elements.btnRenderAvatar.addEventListener('click', async () => {
     const scale = parseFloat(elements.zoomRange.value);
     const blob = await createUpscaledBlob(elements.avatarImg.src, scale, elements.avatarStatus);
@@ -269,7 +306,7 @@ document.addEventListener('DOMContentLoaded', () => {
       elements.avatarStatus.textContent = `Zoom de ${scale}x PRONTO!`;
       elements.avatarStatus.style.color = "#00cc00"; 
     } else {
-      elements.avatarStatus.textContent = "Erro: Servidores ocupados. Tente novamente.";
+      elements.avatarStatus.textContent = "Erro: Servidores ocupados.";
       elements.avatarStatus.style.color = "#ff4444";
       cachedAvatarBlob = null;
     }
@@ -289,8 +326,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  // --- BOTÕES DE DOWNLOAD E CÓPIA ---
-
+  // --- DOWNLOAD/COPY ---
   elements.btnDownloadAvatar.addEventListener('click', () => {
     if (cachedAvatarBlob) {
         const url = URL.createObjectURL(cachedAvatarBlob);
@@ -300,9 +336,7 @@ document.addEventListener('DOMContentLoaded', () => {
         a.click();
         URL.revokeObjectURL(url);
         showToast("Download Iniciado");
-    } else {
-        showToast("Clique na Engrenagem Primeiro");
-    }
+    } else { showToast("Clique na Engrenagem Primeiro"); }
   });
 
   elements.btnCopyAvatar.addEventListener('click', async () => {
@@ -311,9 +345,7 @@ document.addEventListener('DOMContentLoaded', () => {
             await navigator.clipboard.write([new ClipboardItem({ "image/png": cachedAvatarBlob })]);
             showToast("Imagem Copiada");
         } catch(e) { showToast("Erro ao Copiar"); }
-      } else {
-          showToast("Clique na Engrenagem Primeiro");
-      }
+      } else { showToast("Clique na Engrenagem Primeiro"); }
   });
 
   elements.btnDownloadBadge.addEventListener('click', () => {
@@ -325,9 +357,7 @@ document.addEventListener('DOMContentLoaded', () => {
           a.click();
           URL.revokeObjectURL(url);
           showToast("Download Iniciado");
-      } else {
-          showToast("Clique na Engrenagem Primeiro");
-      }
+      } else { showToast("Clique na Engrenagem Primeiro"); }
   });
 
   elements.btnCopyBadge.addEventListener('click', async () => {
@@ -336,16 +366,14 @@ document.addEventListener('DOMContentLoaded', () => {
             await navigator.clipboard.write([new ClipboardItem({ "image/png": cachedBadgeBlob })]);
             showToast("Emblema Copiado");
           } catch(e) { showToast("Erro ao Copiar"); }
-      } else {
-          showToast("Clique na Engrenagem Primeiro");
-      }
+      } else { showToast("Clique na Engrenagem Primeiro"); }
   });
 
   // --- GERAIS ---
   elements.loadBtn.addEventListener('click', () => {
     updateAvatar();
     carregarGrupos(elements.nick.value);
-    fetchMotto(elements.nick.value); // BUSCA A MISSÃO
+    fetchMotto(elements.nick.value);
   });
   elements.nick.addEventListener('keypress', (e) => {
     if (e.key === 'Enter') elements.loadBtn.click();
@@ -397,8 +425,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  // START AUTOMÁTICO
+  // START
   updateAvatar();
   carregarGrupos(elements.nick.value);
-  fetchMotto(elements.nick.value); // BUSCA AO INICIAR
+  fetchMotto(elements.nick.value);
 });
