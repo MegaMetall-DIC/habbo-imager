@@ -37,13 +37,12 @@ header {
 .header-text h1 { margin: 0; font-size: 26px; color: #fff; letter-spacing: 1px; font-weight: 800; }
 .header-text p { margin: 5px 0 0; color: var(--text-muted); font-size: 13px; }
 
-/* LOGOS COM BRILHO (NOVO) */
+/* LOGOS COM BRILHO */
 .logo-dic, .logo-mkt { 
-  height: 70px; 
-  width: auto; 
+  height: 70px; width: auto; 
   filter: drop-shadow(0 0 10px rgba(230,0,0,0.3)); 
 }
-.logo-mkt { height: 60px; } /* Ajuste de altura específica */
+.logo-mkt { height: 60px; }
 
 /* GRID PRINCIPAL */
 .content-grid { display: grid; grid-template-columns: 320px 1fr; gap: 25px; }
@@ -62,6 +61,23 @@ input[type="text"], select {
 }
 input:focus, select:focus { border-color: var(--accent-color); outline: none; }
 
+/* CAIXA DE MISSÃO (NOVO) */
+.motto-box {
+  background: var(--bg-input);
+  border: 1px solid var(--border-color);
+  color: var(--text-main);
+  padding: 10px;
+  border-radius: 4px;
+  font-size: 12px;
+  min-height: 38px;
+  display: flex;
+  align-items: center;
+  box-sizing: border-box;
+  overflow-x: auto;
+  white-space: nowrap;
+  font-family: monospace; /* Fonte tipo código para destacar a missão */
+}
+
 .btn-primary {
   background: var(--accent-color); color: #fff; border: none; padding: 0 20px;
   border-radius: 4px; cursor: pointer; font-weight: 700; text-transform: uppercase; font-size: 12px;
@@ -72,7 +88,6 @@ input:focus, select:focus { border-color: var(--accent-color); outline: none; }
 /* PREVIEW */
 .preview-panel { display: flex; flex-direction: column; gap: 15px; }
 .tip-box { background: rgba(230, 0, 0, 0.1); border: 1px solid rgba(230, 0, 0, 0.2); color: var(--accent-color); padding: 10px 15px; border-radius: 6px; font-size: 12px; display: flex; align-items: center; }
-/* Removido o content: '💡' via CSS pois agora usamos ícone no HTML */
 
 .preview-area {
   background: var(--bg-input); border: 1px solid var(--border-color); border-radius: 8px;
@@ -103,27 +118,17 @@ input:focus, select:focus { border-color: var(--accent-color); outline: none; }
   background: var(--bg-input); border: 1px solid var(--border-color); color: #fff;
   width: 35px; height: 35px; border-radius: 4px; cursor: pointer;
   display: flex; align-items: center; justify-content: center; transition: 0.2s;
-  font-size: 14px; /* Tamanho do ícone */
+  font-size: 14px; 
 }
 .mini-btn:hover { border-color: var(--accent-color); color: var(--accent-color); }
 
-/* Botão de Renderizar */
 .render-btn {
-  background: #2b0b0b;
-  border-color: #661111;
-  width: auto;
-  padding: 0 12px;
-  font-weight: bold;
-  font-size: 11px;
-  gap: 6px; /* Espaço entre icone e texto */
+  background: #2b0b0b; border-color: #661111; width: auto; padding: 0 12px; font-weight: bold; font-size: 11px; gap: 6px;
 }
 .render-btn:hover { background: var(--accent-color); color: #fff; }
 
 .btn-divider { width: 1px; height: 25px; background: var(--border-color); margin: 0 5px; }
-
-.status-text {
-  font-size: 10px; color: #888; margin: 5px 0 0 0; font-style: italic;
-}
+.status-text { font-size: 10px; color: #888; margin: 5px 0 0 0; font-style: italic; }
 
 input[type=range] { width: 100%; accent-color: var(--accent-color); cursor: pointer; }
 .url-copy-area input { background: var(--bg-input); color: #666; font-family: monospace; font-size: 11px; width: 100%; padding: 8px; border: 1px solid var(--border-color); border-radius: 4px; box-sizing: border-box; }
@@ -158,43 +163,20 @@ input[type=range] { width: 100%; accent-color: var(--accent-color); cursor: poin
 footer { margin-top: 40px; border-top: 1px solid var(--border-color); padding-top: 20px; text-align: center; font-size: 12px; color: var(--text-placeholder); }
 footer p { margin: 5px 0; }
 
-/* --- NOTIFICAÇÃO TOAST (NEON FUMAÇA) --- */
+/* TOAST FUMAÇA NEON */
 .custom-toast {
   visibility: hidden;
   position: fixed;
-  top: 20px;
-  right: 20px;
-  left: auto;
-  transform: none;
-  
-  /* Neon Suave Quase Transparente */
+  top: 20px; right: 20px; left: auto; transform: none;
   background: rgba(255, 0, 0, 0.05);
   border: 1px solid rgba(255, 100, 100, 0.3);
   box-shadow: 0 0 15px rgba(255, 0, 0, 0.1);
   color: #ffcccc;
   text-shadow: 0 0 5px rgba(255, 0, 0, 0.5);
-  
-  padding: 15px 30px;
-  border-radius: 4px;
-  font-size: 12px;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 2px;
-  z-index: 9999;
-  pointer-events: none;
-
-  /* Efeito de Saída */
-  opacity: 0;
-  margin-top: -20px;
-  filter: blur(10px);
-  transition: all 1.5s ease-out;
+  padding: 15px 30px; border-radius: 4px; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 2px;
+  z-index: 9999; pointer-events: none;
+  opacity: 0; margin-top: -20px; filter: blur(10px); transition: all 1.5s ease-out;
 }
-
 .custom-toast.show {
-  visibility: visible;
-  /* Efeito de Entrada */
-  opacity: 1;
-  margin-top: 0;
-  filter: blur(0);
-  transition: all 0.3s ease-out;
+  visibility: visible; opacity: 1; margin-top: 0; filter: blur(0); transition: all 0.3s ease-out;
 }
