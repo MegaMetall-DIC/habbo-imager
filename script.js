@@ -14,7 +14,8 @@ document.addEventListener('DOMContentLoaded', () => {
     rotBtns: document.querySelectorAll('.rot-btn'),
     urlOutput: document.getElementById('urlOutput'),
     
-    mottoDisplay: document.getElementById('mottoDisplay'), // Campo da Patente
+    // Campo de Missão (Patente)
+    mottoDisplay: document.getElementById('mottoDisplay'),
 
     // Zoom Avatar
     zoomRange: document.getElementById('zoomRange'),
@@ -40,45 +41,43 @@ document.addEventListener('DOMContentLoaded', () => {
 
   if (!elements.loadBtn) return;
 
-  let cachedAvatarBlob = null;
-  let cachedBadgeBlob = null;
-
-  // --- LISTA DE PATENTES (Ordem: As maiores/compostas primeiro para evitar erro de leitura) ---
+  // --- HIERARQUIA DE PATENTES ---
   const RANK_LIST = [
-    // Militares (Nomes Compostos e Longos)
+    // --- Militares ---
     "Comandante-Geral", "C-Geral", "Tenente-Coronel", "T-Cel", "Vice-Presidente", 
     "Superintendente", "Subtenente", "Aspirante", "Comandante", "Presidente", 
     "Inspetor", "Supremo", "Coronel", "Capitão", "Tenente", "Sargento", "Soldado", 
-    
-    // Executivos (Nomes Compostos e Longos)
+    "Major", "Cabo", 
+    // Abreviações Militares
+    "Maj", "Sgt", "Sub", "Asp", "Ten", "Cap", "Cel", "Insp", "Super", "Cmd",
+
+    // --- Executivos ---
     "Líder-Executivo", "L-Exe", "Administrador", "Investigador", "Coordenador", 
     "Chanceler", "Supervisor", "Advogado", "Delegado", "Acionista", "Promotor", 
     "Analista", "Detetive", "Agente", "Líder", "Sócio",
-
-    // Abreviações Militares (Curtas)
-    "Major", "Maj", "Cabo", "Sgt", "Sub", "Asp", "Ten", "Cap", "Cel", "Insp", "Super", "Cmd",
-
-    // Abreviações Executivas (Curtas)
+    // Abreviações Executivas
     "Adv", "Adm", "Del", "Inv", "Det", "Sup"
   ];
 
-  // --- FUNÇÃO AUXILIAR: EXTRAIR PATENTE ---
-  function extractRankFromMotto(motto) {
-    if (!motto) return "Não faz parte do DIC.";
+  // --- FUNÇÃO PARA EXTRAIR A PATENTE ---
+  function extractRank(motto) {
+    if(!motto) return "Não faz parte do DIC.";
     
-    // Converte para minusculo para busca, mas retorna o nome original da lista
     const lowerMotto = motto.toLowerCase();
 
     for (const rank of RANK_LIST) {
-        // Verifica se a patente está contida na missão
         if (lowerMotto.includes(rank.toLowerCase())) {
-            return rank; // Retorna a patente formatada como está na lista
+            return rank; 
         }
     }
     return "Não faz parte do DIC.";
   }
 
-  // --- FUNÇÃO DE NOTIFICAÇÃO ---
+  // Cache para guardar a imagem gerada
+  let cachedAvatarBlob = null;
+  let cachedBadgeBlob = null;
+
+  // --- FUNÇÃO DE NOTIFICAÇÃO (NEON SMOKE) ---
   function showToast(message) {
     let toast = document.getElementById('customToast');
     if (!toast) {
@@ -104,6 +103,7 @@ document.addEventListener('DOMContentLoaded', () => {
     for (const getProxyUrl of proxies) {
       try {
         if(statusElement) statusElement.textContent = `Processando (Tentativa ${attempt}/${proxies.length})...`;
+        
         const proxyUrl = getProxyUrl(imgUrl);
         const response = await fetch(proxyUrl);
         if (!response.ok) { attempt++; continue; }
@@ -125,11 +125,12 @@ document.addEventListener('DOMContentLoaded', () => {
     return null;
   }
 
-  // --- BUSCAR MISSÃO (PATENTE) ---
+  // --- BUSCAR MISSÃO (MOTTO) ---
   async function fetchMotto(nick) {
     if(!nick) return;
     elements.mottoDisplay.textContent = "Verificando...";
     elements.mottoDisplay.style.color = "#d9b3b3";
+    elements.mottoDisplay.style.textShadow = "none";
 
     const domain = elements.hotel.value === 'es' ? 'es' : (elements.hotel.value === 'com' ? 'com' : 'com.br');
     const targetUrl = `https://www.habbo.${domain}/api/public/users?name=${encodeURIComponent(nick)}`;
@@ -137,30 +138,31 @@ document.addEventListener('DOMContentLoaded', () => {
 
     try {
         const response = await fetch(proxyUrl);
-        if(!response.ok) throw new Error("Erro API");
+        if(!response.ok) throw new Error("Usuário não encontrado");
         
         const data = await response.json();
         
         if (data.motto) {
-            // Usa a nova função de filtro
-            const detectedRank = extractRankFromMotto(data.motto);
-            elements.mottoDisplay.textContent = detectedRank;
+            const patente = extractRank(data.motto);
+            elements.mottoDisplay.textContent = patente;
             
-            // Cor de destaque se for do DIC, cor neutra se não for
-            if (detectedRank !== "Não faz parte do DIC.") {
-                elements.mottoDisplay.style.color = "#00ff00"; // Verde Neon ou Branco (#fff)
+            if(patente !== "Não faz parte do DIC.") {
+                // COR ALTERADA PARA VERMELHO NEON VIBRANTE
+                elements.mottoDisplay.style.color = "#ff0000"; 
                 elements.mottoDisplay.style.fontWeight = "bold";
+                elements.mottoDisplay.style.textShadow = "0 0 8px rgba(255, 0, 0, 0.8)";
             } else {
-                elements.mottoDisplay.style.color = "#ff4444"; // Vermelho
+                elements.mottoDisplay.style.color = "#ff4444"; 
+                elements.mottoDisplay.style.textShadow = "none";
             }
         } else {
             elements.mottoDisplay.textContent = "Não faz parte do DIC.";
             elements.mottoDisplay.style.color = "#ff4444";
         }
     } catch (error) {
-        console.warn("Erro ao buscar motto:", error);
+        console.warn("Erro motto:", error);
         elements.mottoDisplay.textContent = "Usuário não encontrado.";
-        elements.mottoDisplay.style.color = "#d9b3b3";
+        elements.mottoDisplay.style.color = "#888";
     }
   }
 
@@ -297,7 +299,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  // --- RENDER ---
+  // --- EVENTOS ---
   elements.btnRenderAvatar.addEventListener('click', async () => {
     const scale = parseFloat(elements.zoomRange.value);
     const blob = await createUpscaledBlob(elements.avatarImg.src, scale, elements.avatarStatus);
@@ -326,7 +328,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  // --- DOWNLOAD/COPY ---
   elements.btnDownloadAvatar.addEventListener('click', () => {
     if (cachedAvatarBlob) {
         const url = URL.createObjectURL(cachedAvatarBlob);
