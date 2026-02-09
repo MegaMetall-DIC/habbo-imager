@@ -171,15 +171,24 @@ document.addEventListener('DOMContentLoaded', () => {
     let actionsArray = [];
     if(elements.action.value !== 'std') actionsArray.push(elements.action.value);
     
+    // LÓGICA CORRIGIDA PARA MÃO DIREITA (PLACA, BEIJO, ACENAR)
     const rh = elements.rightHand.value;
-    if (['wav', 'blow'].includes(rh)) actionsArray.push(rh);
-    else if (rh === 'respect') paramsObj.gesture = 'srp';
-    else if (parseInt(rh) > 0) actionsArray.push(`crr=${rh}`);
+    if (rh === 'wav') {
+        actionsArray.push('wav');
+    } else if (rh === 'blow') {
+        actionsArray.push('blow');
+    } else if (rh === 'respect') {
+        paramsObj.gesture = 'srp';
+    } else if (rh.startsWith('sign=')) {
+        // Se for placa (ex: sign=11), adiciona direto
+        actionsArray.push(rh); 
+    }
 
+    // LÓGICA CORRIGIDA PARA MÃO ESQUERDA (ITENS)
+    // Agora SEMPRE usa 'crr' (Carregar), nunca 'drk' (Beber)
     const lh = elements.leftHand.value;
     if (parseInt(lh) > 0) {
-       const drinks = ['1','2','3','5','6','9','33','42'];
-       actionsArray.push(drinks.includes(lh) ? `drk=${lh}` : `crr=${lh}`);
+       actionsArray.push(`crr=${lh}`);
     }
 
     if(actionsArray.length > 0) paramsObj.action = actionsArray.join(',');
