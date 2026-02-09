@@ -1,5 +1,4 @@
 :root {
-  /* TEMA VINHO E VERMELHO */
   --bg-dark: #1a0202;      
   --bg-card: #2d0505;      
   --bg-input: #140101;     
@@ -22,7 +21,6 @@ body {
 
 .main-wrapper { max-width: 1000px; margin: 0 auto; }
 
-/* HEADER */
 header {
   border-bottom: 1px solid var(--border-color);
   padding-bottom: 25px;
@@ -37,14 +35,12 @@ header {
 .header-text h1 { margin: 0; font-size: 26px; color: #fff; letter-spacing: 1px; font-weight: 800; }
 .header-text p { margin: 5px 0 0; color: var(--text-muted); font-size: 13px; }
 
-/* LOGOS COM BRILHO */
 .logo-dic, .logo-mkt { 
   height: 70px; width: auto; 
   filter: drop-shadow(0 0 10px rgba(230,0,0,0.3)); 
 }
 .logo-mkt { height: 60px; }
 
-/* GRID PRINCIPAL */
 .content-grid { display: grid; grid-template-columns: 320px 1fr; gap: 25px; }
 @media (max-width: 768px) { .content-grid { grid-template-columns: 1fr; } }
 
@@ -61,21 +57,20 @@ input[type="text"], select {
 }
 input:focus, select:focus { border-color: var(--accent-color); outline: none; }
 
-/* CAIXA DE MISSÃO (NOVO) */
 .motto-box {
   background: var(--bg-input);
   border: 1px solid var(--border-color);
-  color: var(--text-main);
+  color: var(--text-muted);
   padding: 10px;
   border-radius: 4px;
-  font-size: 12px;
+  font-size: 13px;
   min-height: 38px;
   display: flex;
   align-items: center;
   box-sizing: border-box;
   overflow-x: auto;
   white-space: nowrap;
-  font-family: monospace; /* Fonte tipo código para destacar a missão */
+  font-weight: 600;
 }
 
 .btn-primary {
@@ -85,7 +80,6 @@ input:focus, select:focus { border-color: var(--accent-color); outline: none; }
 }
 .btn-primary:hover { background: var(--accent-hover); }
 
-/* PREVIEW */
 .preview-panel { display: flex; flex-direction: column; gap: 15px; }
 .tip-box { background: rgba(230, 0, 0, 0.1); border: 1px solid rgba(230, 0, 0, 0.2); color: var(--accent-color); padding: 10px 15px; border-radius: 6px; font-size: 12px; display: flex; align-items: center; }
 
@@ -108,7 +102,6 @@ input:focus, select:focus { border-color: var(--accent-color); outline: none; }
 .size-btn:hover { background: var(--bg-card); color: #fff; }
 .size-btn.active { background: var(--accent-color); color: #fff; border-color: var(--accent-color); }
 
-/* ZOOM E BOTOES */
 .zoom-tools-wrapper { background: var(--bg-card); padding: 10px 15px; border-radius: 6px; border: 1px solid var(--border-color); margin-top: 5px; }
 .zoom-row { display: flex; align-items: center; gap: 8px; margin-top: 5px; }
 .range-container { flex: 1; display: flex; align-items: center; gap: 10px; }
@@ -133,7 +126,6 @@ input:focus, select:focus { border-color: var(--accent-color); outline: none; }
 input[type=range] { width: 100%; accent-color: var(--accent-color); cursor: pointer; }
 .url-copy-area input { background: var(--bg-input); color: #666; font-family: monospace; font-size: 11px; width: 100%; padding: 8px; border: 1px solid var(--border-color); border-radius: 4px; box-sizing: border-box; }
 
-/* UPSCALER E GRUPOS */
 .resize-section, .groups-section, .upscale-section { margin-top: 25px; }
 .upscale-section { background: var(--bg-card); padding: 20px; border-radius: 8px; border: 1px solid var(--border-color); }
 .upscale-wrapper { display: grid; grid-template-columns: 1fr 280px; gap: 20px; }
@@ -159,11 +151,9 @@ input[type=range] { width: 100%; accent-color: var(--accent-color); cursor: poin
 .group-card img { margin-bottom: 8px; image-rendering: pixelated; }
 .group-card span { font-size: 11px; color: var(--text-muted); pointer-events: none; }
 
-/* FOOTER */
 footer { margin-top: 40px; border-top: 1px solid var(--border-color); padding-top: 20px; text-align: center; font-size: 12px; color: var(--text-placeholder); }
 footer p { margin: 5px 0; }
 
-/* TOAST FUMAÇA NEON */
 .custom-toast {
   visibility: hidden;
   position: fixed;
