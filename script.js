@@ -13,19 +13,13 @@ document.addEventListener('DOMContentLoaded', () => {
     headToggle: document.getElementById('headOnlyBtn'),
     rotBtns: document.querySelectorAll('.rot-btn'),
     urlOutput: document.getElementById('urlOutput'),
-    
-    // Campo de Missão (Patente)
     mottoDisplay: document.getElementById('mottoDisplay'),
-
-    // Zoom Avatar
     zoomRange: document.getElementById('zoomRange'),
     zoomValue: document.getElementById('zoomValue'),
     btnRenderAvatar: document.getElementById('btnRenderAvatar'),
     btnDownloadAvatar: document.getElementById('btnDownloadAvatar'),
     btnCopyAvatar: document.getElementById('btnCopyAvatar'),
     avatarStatus: document.getElementById('avatarStatus'),
-
-    // Upscaler Badge
     badgeImg: document.getElementById('badgePreviewImg'),
     badgeUrlInput: document.getElementById('badgeUrlInput'),
     badgeZoomRange: document.getElementById('badgeZoomRange'),
@@ -35,36 +29,26 @@ document.addEventListener('DOMContentLoaded', () => {
     btnCopyBadge: document.getElementById('btnCopyBadge'),
     badgePlaceholder: document.getElementById('badgePlaceholderText'),
     badgeStatus: document.getElementById('badgeStatus'),
-    
     groupsContainer: document.getElementById('groupsContainer')
   };
 
   if (!elements.loadBtn) return;
 
-  // --- HIERARQUIA DE PATENTES ---
   const RANK_LIST = [
-    // --- Militares ---
     "Comandante-Geral", "C-Geral", "Tenente-Coronel", "T-Cel", "Vice-Presidente", 
     "Superintendente", "Subtenente", "Aspirante", "Comandante", "Presidente", 
     "Inspetor", "Supremo", "Coronel", "Capitão", "Tenente", "Sargento", "Soldado", 
     "Major", "Cabo", 
-    // Abreviações Militares
     "Maj", "Sgt", "Sub", "Asp", "Ten", "Cap", "Cel", "Insp", "Super", "Cmd",
-
-    // --- Executivos ---
     "Líder-Executivo", "L-Exe", "Administrador", "Investigador", "Coordenador", 
     "Chanceler", "Supervisor", "Advogado", "Delegado", "Acionista", "Promotor", 
     "Analista", "Detetive", "Agente", "Líder", "Sócio",
-    // Abreviações Executivas
     "Adv", "Adm", "Del", "Inv", "Det", "Sup"
   ];
 
-  // --- FUNÇÃO PARA EXTRAIR A PATENTE ---
   function extractRank(motto) {
     if(!motto) return "Não faz parte do DIC.";
-    
     const lowerMotto = motto.toLowerCase();
-
     for (const rank of RANK_LIST) {
         if (lowerMotto.includes(rank.toLowerCase())) {
             return rank; 
@@ -73,11 +57,9 @@ document.addEventListener('DOMContentLoaded', () => {
     return "Não faz parte do DIC.";
   }
 
-  // Cache para guardar a imagem gerada
   let cachedAvatarBlob = null;
   let cachedBadgeBlob = null;
 
-  // --- FUNÇÃO DE NOTIFICAÇÃO (NEON SMOKE) ---
   function showToast(message) {
     let toast = document.getElementById('customToast');
     if (!toast) {
@@ -91,7 +73,6 @@ document.addEventListener('DOMContentLoaded', () => {
     setTimeout(() => { toast.className = 'custom-toast'; }, 3000);
   }
 
-  // --- FUNÇÃO DE PROXIES ---
   async function createUpscaledBlob(imgUrl, scale, statusElement) {
     const proxies = [
       (url) => `https://corsproxy.io/?${encodeURIComponent(url)}`,
@@ -102,8 +83,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let attempt = 1;
     for (const getProxyUrl of proxies) {
       try {
-        if(statusElement) statusElement.textContent = `Processando (Tentativa ${attempt}/${proxies.length})...`;
-        
+        if(statusElement) statusElement.textContent = `Processando...`;
         const proxyUrl = getProxyUrl(imgUrl);
         const response = await fetch(proxyUrl);
         if (!response.ok) { attempt++; continue; }
@@ -125,7 +105,6 @@ document.addEventListener('DOMContentLoaded', () => {
     return null;
   }
 
-  // --- BUSCAR MISSÃO (MOTTO) ---
   async function fetchMotto(nick) {
     if(!nick) return;
     elements.mottoDisplay.textContent = "Verificando...";
@@ -147,7 +126,6 @@ document.addEventListener('DOMContentLoaded', () => {
             elements.mottoDisplay.textContent = patente;
             
             if(patente !== "Não faz parte do DIC.") {
-                // COR ALTERADA PARA VERMELHO NEON VIBRANTE
                 elements.mottoDisplay.style.color = "#ff0000"; 
                 elements.mottoDisplay.style.fontWeight = "bold";
                 elements.mottoDisplay.style.textShadow = "0 0 8px rgba(255, 0, 0, 0.8)";
@@ -160,13 +138,11 @@ document.addEventListener('DOMContentLoaded', () => {
             elements.mottoDisplay.style.color = "#ff4444";
         }
     } catch (error) {
-        console.warn("Erro motto:", error);
         elements.mottoDisplay.textContent = "Usuário não encontrado.";
         elements.mottoDisplay.style.color = "#888";
     }
   }
 
-  // --- ATUALIZAR AVATAR ---
   let currentState = { direction: 2, headDirection: 2, headOnly: false, size: 'm' };
 
   function updateAvatar() {
@@ -216,7 +192,6 @@ document.addEventListener('DOMContentLoaded', () => {
     elements.urlOutput.value = fullUrl;
   }
 
-  // --- CARREGAR GRUPOS ---
   async function carregarGrupos(nick) {
     if(!nick) return;
     const originalText = elements.loadBtn.textContent;
@@ -299,7 +274,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  // --- EVENTOS ---
   elements.btnRenderAvatar.addEventListener('click', async () => {
     const scale = parseFloat(elements.zoomRange.value);
     const blob = await createUpscaledBlob(elements.avatarImg.src, scale, elements.avatarStatus);
@@ -370,7 +344,6 @@ document.addEventListener('DOMContentLoaded', () => {
       } else { showToast("Clique na Engrenagem Primeiro"); }
   });
 
-  // --- GERAIS ---
   elements.loadBtn.addEventListener('click', () => {
     updateAvatar();
     carregarGrupos(elements.nick.value);
@@ -426,7 +399,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  // START
   updateAvatar();
   carregarGrupos(elements.nick.value);
   fetchMotto(elements.nick.value);
