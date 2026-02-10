@@ -30,7 +30,6 @@ document.addEventListener('DOMContentLoaded', () => {
     badgePlaceholder: document.getElementById('badgePlaceholderText'),
     badgeStatus: document.getElementById('badgeStatus'),
     groupsContainer: document.getElementById('groupsContainer'),
-    // Novos botões de modo
     rotModeBtns: document.querySelectorAll('.rot-mode')
   };
 
@@ -149,8 +148,8 @@ document.addEventListener('DOMContentLoaded', () => {
     direction: 2, 
     headDirection: 2, 
     headOnly: false, 
-    size: 'm',
-    rotMode: 'all' // all, body, head
+    size: 'l', // AGORA INICIA COMO GRANDE (L)
+    rotMode: 'all' 
   };
 
   function updateAvatar() {
@@ -170,7 +169,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let paramsObj = {
       user: nick,
       direction: currentState.direction,
-      head_direction: currentState.headDirection, // Agora usa a variável correta
+      head_direction: currentState.headDirection,
       gesture: elements.gesture.value,
       size: currentState.size,
       img_format: elements.format.value
@@ -287,7 +286,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  // EVENTOS DE BOTÕES DE ROTAÇÃO E MODO
   elements.rotModeBtns.forEach(btn => {
     btn.addEventListener('click', () => {
         elements.rotModeBtns.forEach(b => b.classList.remove('active'));
@@ -299,7 +297,7 @@ document.addEventListener('DOMContentLoaded', () => {
   elements.rotBtns.forEach(btn => {
     btn.addEventListener('click', () => {
       const dir = btn.getAttribute('data-dir');
-      const delta = dir === '1' ? 1 : 7; // +1 ou -1 (mod 8)
+      const delta = dir === '1' ? 1 : 7; 
       
       if (currentState.rotMode === 'all' || currentState.rotMode === 'body') {
          currentState.direction = (currentState.direction + delta) % 8;
