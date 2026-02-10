@@ -29,7 +29,9 @@ document.addEventListener('DOMContentLoaded', () => {
     btnCopyBadge: document.getElementById('btnCopyBadge'),
     badgePlaceholder: document.getElementById('badgePlaceholderText'),
     badgeStatus: document.getElementById('badgeStatus'),
-    groupsContainer: document.getElementById('groupsContainer')
+    groupsContainer: document.getElementById('groupsContainer'),
+    // Novos botões de modo
+    rotModeBtns: document.querySelectorAll('.rot-mode')
   };
 
   if (!elements.loadBtn) return;
@@ -143,7 +145,13 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  let currentState = { direction: 2, headDirection: 2, headOnly: false, size: 'm' };
+  let currentState = { 
+    direction: 2, 
+    headDirection: 2, 
+    headOnly: false, 
+    size: 'm',
+    rotMode: 'all' // all, body, head
+  };
 
   function updateAvatar() {
     cachedAvatarBlob = null;
@@ -162,7 +170,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let paramsObj = {
       user: nick,
       direction: currentState.direction,
-      head_direction: currentState.direction,
+      head_direction: currentState.headDirection, // Agora usa a variável correta
       gesture: elements.gesture.value,
       size: currentState.size,
       img_format: elements.format.value
@@ -171,7 +179,6 @@ document.addEventListener('DOMContentLoaded', () => {
     let actionsArray = [];
     if(elements.action.value !== 'std') actionsArray.push(elements.action.value);
     
-    // LÓGICA CORRIGIDA PARA MÃO DIREITA (PLACA, BEIJO, ACENAR)
     const rh = elements.rightHand.value;
     if (rh === 'wav') {
         actionsArray.push('wav');
@@ -180,12 +187,9 @@ document.addEventListener('DOMContentLoaded', () => {
     } else if (rh === 'respect') {
         paramsObj.gesture = 'srp';
     } else if (rh.startsWith('sign=')) {
-        // Se for placa (ex: sign=11), adiciona direto
         actionsArray.push(rh); 
     }
 
-    // LÓGICA CORRIGIDA PARA MÃO ESQUERDA (ITENS)
-    // Agora SEMPRE usa 'crr' (Carregar), nunca 'drk' (Beber)
     const lh = elements.leftHand.value;
     if (parseInt(lh) > 0) {
        actionsArray.push(`crr=${lh}`);
@@ -283,6 +287,31 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
+  // EVENTOS DE BOTÕES DE ROTAÇÃO E MODO
+  elements.rotModeBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+        elements.rotModeBtns.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        currentState.rotMode = btn.getAttribute('data-mode');
+    });
+  });
+
+  elements.rotBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      const dir = btn.getAttribute('data-dir');
+      const delta = dir === '1' ? 1 : 7; // +1 ou -1 (mod 8)
+      
+      if (currentState.rotMode === 'all' || currentState.rotMode === 'body') {
+         currentState.direction = (currentState.direction + delta) % 8;
+      }
+      if (currentState.rotMode === 'all' || currentState.rotMode === 'head') {
+         currentState.headDirection = (currentState.headDirection + delta) % 8;
+      }
+      
+      updateAvatar();
+    });
+  });
+
   elements.btnRenderAvatar.addEventListener('click', async () => {
     const scale = parseFloat(elements.zoomRange.value);
     const blob = await createUpscaledBlob(elements.avatarImg.src, scale, elements.avatarStatus);
@@ -376,13 +405,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-  elements.rotBtns.forEach(btn => {
-    btn.addEventListener('click', () => {
-      const dir = btn.getAttribute('data-dir');
-      currentState.direction = dir === '1' ? (currentState.direction + 1) % 8 : (currentState.direction - 1 + 8) % 8;
-      updateAvatar();
-    });
-  });
   elements.headToggle.addEventListener('click', () => {
     currentState.headOnly = !currentState.headOnly;
     elements.headToggle.classList.toggle('active');
